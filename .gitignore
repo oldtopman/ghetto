@@ -1,0 +1,10 @@
+#Git ignore list
+.DS_Store
+*~
+*.bin
+*gmon.out
+programs/ch3-ex05/Ch3_Ex5Out.txt
+*kate-swp
+*.~lock*
+*.dSYM
+programs/ch9-ex02/Ch9_Ex2Out.txt
