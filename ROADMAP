@@ -1,0 +1,16 @@
+Plans for development of ghetto.
+
+Version 0.x
+  Get basic networking model down.
+  Get a server-client model working.
+
+Version 1.x
+  Get a mesh networking model working.
+  Get information into and out of firewalls.
+
+Version 2.x
+  Use uptime and other computers to see the reliability of the network.
+  Get message sending protocol working.
+
+Version 3.x
+  Get ghetto working without ghettod to always be on (in case root is not allowed)
