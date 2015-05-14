@@ -2,9 +2,24 @@
 .DS_Store
 *~
 *.bin
+*.o
 *gmon.out
-programs/ch3-ex05/Ch3_Ex5Out.txt
 *kate-swp
 *.~lock*
 *.dSYM
-programs/ch9-ex02/Ch9_Ex2Out.txt
+
+#ignores for automake crap
+*autom4te.cache
+*configure
+*depcomp
+*install-sh
+*missing
+*stamp-h1
+*compile
+*.in
+Makefile
+aclocal.m4
+config.log
+config.status
+ghetto/src/.deps/*
+
