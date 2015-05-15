@@ -1,4 +1,4 @@
 bin_PROGRAMS = ghetto
 
-helloworld_SOURCES = ghetto.cpp
-helloworld_LDADD = "$(CURL_LIBS) -lncurses"
+ghetto_SOURCES = ghetto.cpp
+ghetto_LDADD = "$(CURL_LIBS) -lncurses"
