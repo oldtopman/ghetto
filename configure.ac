@@ -5,7 +5,7 @@
 AC_PREREQ([2.69])
 
 AC_INIT([ghetto], [0.0.1], [oldtopman@gmail.com])
-AC_CONFIG_SRCDIR([src/main.cpp])
+AC_CONFIG_SRCDIR([src/ghetto.cpp])
 AC_CONFIG_HEADERS([src/config.h])
 
 AM_INIT_AUTOMAKE
