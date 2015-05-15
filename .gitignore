@@ -21,5 +21,8 @@ Makefile
 aclocal.m4
 config.log
 config.status
-ghetto/src/.deps/*
+src/.deps/*
+src/config.h
+ghetto
+ghettod
 
