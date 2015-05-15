@@ -17,6 +17,7 @@ AC_PROG_CXX
 
 PKG_CHECK_MODULES([CURL], [libcurl])
 #Don't use pkg-config for ncurses, it's not reliable
+PKG_CHECK_MODULES([MHTTPD], [libmicrohttpd])
 
 # Checks for header files.
 AC_CHECK_HEADERS([ncurses.h])
