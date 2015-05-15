@@ -1,6 +1,4 @@
-bin_PROGRAMS = ghetto.bin
+bin_PROGRAMS = ghetto
 
-#AM_CXXFLAGS = $(INTI_CFLAGS)
-
-helloworld_SOURCES = main.cpp
-helloworld_LDADD = "$(INTI_LIBS) $(curl-config --libs)"
+helloworld_SOURCES = ghetto.cpp
+helloworld_LDADD = "$(CURL_LIBS) -lncurses"
