@@ -14,14 +14,14 @@
 #include <ncurses.h>
 
 //Defines
-#define PORT 6770 //G(HE)TTO
+#define GHETTO_PORT 6770 //G(HE)TTO
 
-static int
-answer_to_connection (void *cls, struct MHD_Connection *connection,
+
+static int answer_to_connection (void *cls, struct MHD_Connection *connection,
                       const char *url, const char *method,
                       const char *version, const char *upload_data,
-                      size_t *upload_data_size, void **con_cls)
-{
+                      size_t *upload_data_size, void **con_cls){
+  
   const char *page = "<html><body>Hello, browser!</body></html>";
   struct MHD_Response *response;
   int ret;
@@ -35,12 +35,10 @@ answer_to_connection (void *cls, struct MHD_Connection *connection,
   return ret;
 }
 
-int
-main ()
-{
+int main(int argc, char* argv[]){
   struct MHD_Daemon *daemon;
 
-  daemon = MHD_start_daemon (MHD_USE_SELECT_INTERNALLY, PORT, NULL, NULL,
+  daemon = MHD_start_daemon (MHD_USE_SELECT_INTERNALLY, GHETTO_PORT, NULL, NULL,
                              &answer_to_connection, NULL, MHD_OPTION_END);
   if (NULL == daemon)
     return 1;
