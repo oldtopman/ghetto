@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 //General includes
+#include <unistd.h> //gethostname
 #include <stdio.h>
 #include <fstream>
 #include <stdlib.h>
@@ -46,6 +47,14 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
 }
  
 int main(int argc, char* argv[]){
+  
+  /**************************
+  * Variable initialization *
+  **************************/
+  
+  //Get hostname
+  char hostname[65];
+  gethostname(hostname, 65);
   
   /*********************
   * Initialize ncurses *
@@ -98,10 +107,20 @@ int main(int argc, char* argv[]){
   * Splash screen *
   ****************/
   mvprintw(0,0,"ghetto - A tool for keeping track of your linux-based systems and their uptimes");
-  mvprintw(1,0,"Copyright 2015 oldtopman <oldtopman@gmail.com> Licensed under the GNU GPLv3");
-  mvprintw(2,0,"Press any key to start the program.");
+  mvprintw(1,0,"Copyright 2015 oldtopman <oldtopman@gmail.com>");
+  
+  mvprintw(3,0,"This program comes with ABSOLUTELY NO WARRANTY.");
+  mvprintw(4,0,"This is free software, and you are welcome to redistribute it");
+  mvprintw(5,0,"under certain conditions; see COPYING for details.");
+  mvprintw(6,0,"The complete text of the GNU GPLv3, which covers this software,");
+  mvprintw(7,0,"should be included in the file \"LICENSE.TXT\".");
+  mvprintw(8,0,"If not, see <http://www.gnu.org/licenses/>.");
+  
+  mvprintw(10,0,"Press any key to start the program.");
   
   getch();
+  clear();
+  refresh();
  
   //Get the 
   CURL *curlHandle;
@@ -118,8 +137,6 @@ int main(int argc, char* argv[]){
   if(curl_easy_perform(curlHandle) != CURLE_OK){
     
     //Handle errors.
-    clear();
-    refresh();
     errorDbox.make(curlError);
   }
  
