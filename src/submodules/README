@@ -1,0 +1,5 @@
+Submodule readme:
+
+To populate this directory, go to the top of the working head and run:
+git submodule init
+git submodule update
