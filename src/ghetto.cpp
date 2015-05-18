@@ -86,6 +86,8 @@ int main(int argc, char* argv[]){
  
   curl_global_init(CURL_GLOBAL_NOTHING); //Assume libcurl was compiled with minimal features
   
+  char curlError[CURL_ERROR_SIZE]; //Handle curl errors.
+  
   /****************************************************
   *****************************************************
   ******************* BEGIN PROGRAM *******************
@@ -102,17 +104,24 @@ int main(int argc, char* argv[]){
   getch();
  
   //Get the 
-  CURL *curl_handle;
+  CURL *curlHandle;
   
-  curl_handle = curl_easy_init();
+  curlHandle = curl_easy_init();
  
   //Configure handle
-  curl_easy_setopt(curl_handle, CURLOPT_URL, "http://localhost:6770");
-  curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
-  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, bodyfile);
+  curl_easy_setopt(curlHandle, CURLOPT_URL, "http://localhost:6770");
+  curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, write_data);
+  curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, bodyfile);
+  curl_easy_setopt(curlHandle, CURLOPT_ERRORBUFFER, curlError);
  
   //Execute handle
-  curl_easy_perform(curl_handle);
+  if(curl_easy_perform(curlHandle) != CURLE_OK){
+    
+    //Handle errors.
+    clear();
+    refresh();
+    errorDbox.make(curlError);
+  }
  
   /**********
   * Cleanup *
@@ -121,7 +130,7 @@ int main(int argc, char* argv[]){
   //TODO: Move most of these to atexits?
   endwin();
   fclose(bodyfile);
-  curl_easy_cleanup(curl_handle);
+  curl_easy_cleanup(curlHandle);
  
   return 0;
 }
