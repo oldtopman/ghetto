@@ -91,7 +91,17 @@ int main(int argc, char* argv[]){
   ******************* BEGIN PROGRAM *******************
   *****************************************************
   ****************************************************/
+  
+  /****************
+  * Splash screen *
+  ****************/
+  mvprintw(0,0,"ghetto - A tool for keeping track of your linux-based systems and their uptimes");
+  mvprintw(1,0,"Copyright 2015 oldtopman <oldtopman@gmail.com> Licensed under the GNU GPLv3");
+  mvprintw(2,0,"Press any key to start the program.");
+  
+  getch();
  
+  //Get the 
   CURL *curl_handle;
   
   curl_handle = curl_easy_init();

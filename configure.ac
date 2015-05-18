@@ -10,8 +10,11 @@ AC_CONFIG_HEADERS([src/config.h])
 
 AM_INIT_AUTOMAKE
 
-# Checks for programs.
+#Checks for compiler capabilities.
 AC_PROG_CXX
+AX_CXX_COMPILE_STDCXX_11
+
+# Checks for programs.
 
 # Checks for libraries.
 

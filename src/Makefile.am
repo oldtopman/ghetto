@@ -1,6 +1,6 @@
 bin_PROGRAMS = ghetto ghettod
 
-ghetto_SOURCES = ghetto.cpp
+ghetto_SOURCES = ghetto.cpp submodules/ncurses-menu/dialogBox.cpp submodules/ncurses-menu/menu.cpp
 ghetto_LDADD = $(CURL_LIBS) -lncurses
 
 ghettod_SOURCES = ghettod.cpp
