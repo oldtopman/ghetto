@@ -32,6 +32,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //ncurses includes
 #include <ncurses.h>
 
+//ncurses-menu includes
+#include "submodules/ncurses-menu/dialogBox.h"
+#include "submodules/ncurses-menu/menu.h"
+
 //Defines
 #define GHETTO_PORT 6770 //G(HE)TTO
  
@@ -42,6 +46,27 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
 }
  
 int main(int argc, char* argv[]){
+  
+  /*********************
+  * Initialize ncurses *
+  *********************/ 
+  
+  initscr();
+  raw();
+  noecho();
+  cbreak();
+  keypad(stdscr, true);
+  curs_set(0);
+  
+  //Configurate the error dbox.
+  DialogBox errorDbox;
+  errorDbox.options(0,0,0,true);
+  
+  //Turn color on if supported.
+  if(has_colors() == true){ start_color(); }
+  else{
+    errorDbox.make("No color support here._You should really upgrade your terminal._:(");
+  }
   
   /**********************
   * File initialization *

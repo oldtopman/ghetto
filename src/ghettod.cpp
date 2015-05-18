@@ -29,9 +29,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sys/socket.h>
 #include <microhttpd.h>
 
-//ncurses includes
-#include <ncurses.h>
-
 //Defines
 #define GHETTO_PORT 6770 //G(HE)TTO
 
