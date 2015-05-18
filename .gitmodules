@@ -1,0 +1,3 @@
+[submodule "src/submodules/ncurses-menu"]
+	path = src/submodules/ncurses-menu
+	url = git@github.com:oldtopman/ncurses-menu.git
