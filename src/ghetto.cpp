@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //General includes
 #include <unistd.h> //gethostname
+#include <pwd.h> //user's home directory
 #include <stdio.h>
 #include <fstream>
 #include <stdlib.h>
@@ -54,7 +55,21 @@ int main(int argc, char* argv[]){
   
   //Get hostname
   char hostname[65];
-  gethostname(hostname, 65);
+  if(gethostname(hostname, 65)){
+    std::cout << "Could not get hostname. Exiting." << std::endl;
+    return 1;
+  }
+  
+  //Get homedir
+  std::string homedir("");
+  if ((homedir = getenv("HOME")) == "") { //Use $HOME before looking it up ourselves.
+    homedir = getpwuid(getuid())->pw_dir;
+  }
+  if(homedir == ""){
+    std::cout << "Could not get homedir. Exiting." << std::endl;
+    return 1;
+  }
+  
   
   /*********************
   * Initialize ncurses *
@@ -88,6 +103,7 @@ int main(int argc, char* argv[]){
   if(!bodyfile) {
     return -1;
   }
+  
   
   /*************************
   * Libcurl initialization *
