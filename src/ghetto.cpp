@@ -119,6 +119,7 @@ int main(int argc, char* argv[]){
   **********/
   
   //TODO: Move most of these to atexits?
+  endwin();
   fclose(bodyfile);
   curl_easy_cleanup(curl_handle);
  

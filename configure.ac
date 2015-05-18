@@ -7,11 +7,14 @@ AC_PREREQ([2.69])
 AC_INIT([ghetto], [0.0.1], [oldtopman@gmail.com])
 AC_CONFIG_SRCDIR([src/ghetto.cpp])
 AC_CONFIG_HEADERS([src/config.h])
+AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE
 
 #Checks for compiler capabilities.
 AC_PROG_CXX
+
+#We need a way to get CXX11 going here. This isn't working in 2.69 for some reason.
 AX_CXX_COMPILE_STDCXX_11
 
 # Checks for programs.
