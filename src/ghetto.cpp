@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //General includes
 #include <unistd.h> //gethostname
 #include <pwd.h> //user's home directory
+#include <errno.h>
 #include <stdio.h>
 #include <fstream>
 #include <stdlib.h>
@@ -49,9 +50,15 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
  
 int main(int argc, char* argv[]){
   
+  /***********************
+  * Variable declaration *
+  ***********************/
+  
+  //None yet
+  
   /**************************
-  * Variable initialization *
-  **************************/
+   * Variable initialization *
+   **************************/
   
   //Get hostname
   char hostname[65];
@@ -60,14 +67,30 @@ int main(int argc, char* argv[]){
     return 1;
   }
   
-  //Get homedir
-  std::string homedir("");
-  if ((homedir = getenv("HOME")) == "") { //Use $HOME before looking it up ourselves.
-    homedir = getpwuid(getuid())->pw_dir;
+  //Get homePath
+  std::string homePath("");
+  if ((homePath = getenv("HOME")) == "") { //Use $HOME before looking it up ourselves.
+    homePath = getpwuid(getuid())->pw_dir;
   }
-  if(homedir == ""){
-    std::cout << "Could not get homedir. Exiting." << std::endl;
+  if(homePath == ""){
+    std::cout << "Could not get homePath. Exiting." << std::endl;
     return 1;
+  }
+  
+  //Set other paths
+  std::string ghettoPath(homePath + "/.ghetto");
+  std::string settingsPath(homePath + "/.ghetto/config");
+  
+  /**********************
+   * File initialization *
+   **********************/
+  
+  static const char * bodyfilename = "body.out";
+  FILE * bodyfile;
+  
+  bodyfile = fopen(bodyfilename, "wb");
+  if(!bodyfile) {
+    return -1;
   }
   
   
@@ -92,18 +115,6 @@ int main(int argc, char* argv[]){
     errorDbox.make("No color support here._You should really upgrade your terminal._:(");
   }
   
-  /**********************
-  * File initialization *
-  **********************/
-  
-  static const char * bodyfilename = "body.out";
-  FILE * bodyfile;
-  
-  bodyfile = fopen(bodyfilename, "wb");
-  if(!bodyfile) {
-    return -1;
-  }
-  
   
   /*************************
   * Libcurl initialization *
@@ -119,25 +130,47 @@ int main(int argc, char* argv[]){
   *****************************************************
   ****************************************************/
   
-  /****************
-  * Splash screen *
-  ****************/
-  mvprintw(0,0,"ghetto - A tool for keeping track of your linux-based systems and their uptimes");
-  mvprintw(1,0,"Copyright 2015 oldtopman <oldtopman@gmail.com>");
-  
-  mvprintw(3,0,"This program comes with ABSOLUTELY NO WARRANTY.");
-  mvprintw(4,0,"This is free software, and you are welcome to redistribute it");
-  mvprintw(5,0,"under certain conditions; see COPYING for details.");
-  mvprintw(6,0,"The complete text of the GNU GPLv3, which covers this software,");
-  mvprintw(7,0,"should be included in the file \"LICENSE.TXT\".");
-  mvprintw(8,0,"If not, see <http://www.gnu.org/licenses/>.");
-  
-  mvprintw(10,0,"Press any key to start the program.");
-  
-  getch();
   clear();
   refresh();
- 
+  
+  DialogBox statusDbox;
+  statusDbox.options(0,0,0,false);
+  statusDbox.make("Loading settings...");
+  
+  //Load settings.
+  std::ifstream settingsFile(settingsPath.c_str());
+  
+  //If it failed, try to create directory.
+  if(!settingsFile){
+    if(mkdir(ghettoPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)){
+      //If mkdir failed, find out why and tell.
+      statusDbox.clear();
+      if(errno == EROFS){
+        errorDbox.make("Setting initialization failed:_Read only filesystem.");
+        return 1;
+      }
+      if(errno == EEXIST){
+        //If the directory already exists, we have a problem loading the file.
+        errorDbox.make("Setting loading failed._Directory exists, but config cannot be loaded.");
+        return 1;
+      }
+      else{
+        std::string errorString("Unknown error encountered calling mkdir()_See man mkdir() for details_ errno=");
+        errorString << errno;
+        errorDbox.make(errorString.c_str());
+        return 1;
+      }
+    }
+    
+    //Now we should be able to create our file.
+    //We have nothing to write into it at the moment, so we'll do nothing.
+  }
+  else{
+    //Here we would read the settings into the program.
+    //No settings to read at the moment though.
+  }
+  
+  
   //Get the 
   CURL *curlHandle;
   
