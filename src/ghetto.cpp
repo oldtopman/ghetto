@@ -183,10 +183,18 @@ int main(int argc, char* argv[]){
   //Here we load the config file.
   //TODO: Read config file
   
+  //Done loading settings, so:
+  if(ifSettingsFile){ ifSettingsFile.close(); }
+  
+  statusDbox.clean();
+  statusDbox.make("Loading network info...");
+  
   //Load the json file that has all the info about the network.
   std::ifstream ifNetInfoFile(netInfoPath.c_str());
   
   //Errors on loading are going to indicate a problem with ghettod not running.
+  //We're assuming that all errors are file not found.
+  //TODO: Handle other load file errors.
   if(!ifNetInfoFile){
     //Loop until the file loads
     while(!ifNetInfoFile){
@@ -208,9 +216,8 @@ int main(int argc, char* argv[]){
   
   
   
-  //Get the 
+  //Initialize our handle
   CURL *curlHandle;
-  
   curlHandle = curl_easy_init();
  
   //Configure handle
