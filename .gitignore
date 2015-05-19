@@ -1,4 +1,4 @@
-#Git ignore list
+#Misc file ignore list
 .DS_Store
 *~
 *.bin
@@ -23,6 +23,9 @@ config.log
 config.status
 src/.deps/*
 src/config.h
-ghetto
-ghettod
+autoscan.log
+configure.scan
 
+#project ignore list
+src/ghetto
+src/ghettod
