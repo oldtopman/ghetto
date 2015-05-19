@@ -1,2 +1,29 @@
 ghetto
 A tool for keeping track of your linux-based systems and their uptimes.
+ghetto is licensed under the GNU GPLv3. See COPYING for details.
+
+Dependencies:
+autotools
+libcurl
+libmicrohttpd
+linux (lots of linux-specific calls here)
+
+Included dependencies/credits:
+
+library name
+  Written by author name
+  Project License
+  Location in project
+  Link to the project website
+  
+ncurses-menu
+  Written by oldtopman (me)
+  GNU GPL v3
+  src/submodules/ncurses-menu
+  https://github.com/oldtopman/ncurses-menu
+  
+jsoncons
+  Written by Daniel Parker
+  Boost Software License
+  src/jsoncons
+  https://github.com/danielaparker/jsoncons
