@@ -191,11 +191,11 @@ int main(int argc, char* argv[]){
     //Loop until the file loads
     while(!ifNetInfoFile){
       //Retry every 5 seconds.
-      for(std::time_t timeCounter = std::time(nullptr); (std::time(nullptr) - timeCounter) < 5;){
+      for(std::time_t timeCounter = std::time(nullptr); (std::time(nullptr) - timeCounter) < 6;){
         
         //Build a little countdown message.
         std::string checkMessage("netinfo.json not found. Has ghettod run?_Retrying in ");
-        checkMessage += std::to_string( ((std::time(nullptr) - timeCounter) - 5));
+        checkMessage += std::to_string( 5 - ((std::time(nullptr) - timeCounter)) );
         checkMessage += "s";
         statusDbox.clean();
         statusDbox.make(checkMessage.c_str());
