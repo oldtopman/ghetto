@@ -45,11 +45,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <ncurses.h>
 
 //ncurses-menu includes
-#include "submodules/ncurses-menu/dialogBox.h"
-#include "submodules/ncurses-menu/menu.h"
+#include "../submodules/ncurses-menu/dialogBox.h"
+#include "../submodules/ncurses-menu/menu.h"
 
 //json includes
-#include "jsoncons/json.hpp"
+#include "../jsoncons/json.hpp"
 
 //Defines
 #define GHETTO_PORT 6770 //G(HE)TTO

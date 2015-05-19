@@ -1,4 +1,5 @@
 #Git ignore list
+build/*
 .DS_Store
 *~
 *.bin
