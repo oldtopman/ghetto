@@ -27,6 +27,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <ctime>
+#include <cstdint>
+#include <stdexcept>
+
+//For mkdir
+#include <sys/types.h>
+#include <sys/stat.h>
+
+//autotools includes
 #include "config.h"
 
 //libcurl includes
@@ -38,6 +47,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //ncurses-menu includes
 #include "submodules/ncurses-menu/dialogBox.h"
 #include "submodules/ncurses-menu/menu.h"
+
+//json includes
+#include "jsoncons/json.hpp"
 
 //Defines
 #define GHETTO_PORT 6770 //G(HE)TTO
@@ -79,12 +91,14 @@ int main(int argc, char* argv[]){
   
   //Set other paths
   std::string ghettoPath(homePath + "/.ghetto");
-  std::string settingsPath(homePath + "/.ghetto/config");
+  std::string settingsPath(ghettoPath + "/config");
+  std::string netInfoPath(ghettoPath + "/netinfo.json");
   
   /**********************
    * File initialization *
    **********************/
   
+  //TODO: Remove this
   static const char * bodyfilename = "body.out";
   FILE * bodyfile;
   
@@ -138,37 +152,60 @@ int main(int argc, char* argv[]){
   statusDbox.make("Loading settings...");
   
   //Load settings.
-  std::ifstream settingsFile(settingsPath.c_str());
+  std::ifstream ifSettingsFile(settingsPath.c_str());
   
   //If it failed, try to create directory.
-  if(!settingsFile){
-    if(mkdir(ghettoPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)){
+  if(!ifSettingsFile){
+    if(mkdir(ghettoPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)){
       //If mkdir failed, find out why and tell.
-      statusDbox.clear();
+      statusDbox.clean();
       if(errno == EROFS){
         errorDbox.make("Setting initialization failed:_Read only filesystem.");
         return 1;
       }
       if(errno == EEXIST){
-        //If the directory already exists, we have a problem loading the file.
-        errorDbox.make("Setting loading failed._Directory exists, but config cannot be loaded.");
-        return 1;
+        //This means that ghettod has initialized the folder structure
+        //But that ghetto hasn't run before.
       }
       else{
         std::string errorString("Unknown error encountered calling mkdir()_See man mkdir() for details_ errno=");
-        errorString << errno;
+        errorString += std::to_string( errno );
         errorDbox.make(errorString.c_str());
         return 1;
       }
     }
-    
-    //Now we should be able to create our file.
-    //We have nothing to write into it at the moment, so we'll do nothing.
+    else{
+      //This means that neither ghettod or ghetto has run before.
+      //We're going to be in trouble, since ghetto needs ghettod to be running already/before.
+    }
   }
-  else{
-    //Here we would read the settings into the program.
-    //No settings to read at the moment though.
+  
+  //Here we load the config file.
+  //TODO: Read config file
+  
+  //Load the json file that has all the info about the network.
+  std::ifstream ifNetInfoFile(netInfoPath.c_str());
+  
+  //Errors on loading are going to indicate a problem with ghettod not running.
+  if(!ifNetInfoFile){
+    //Loop until the file loads
+    while(!ifNetInfoFile){
+      //Retry every 5 seconds.
+      for(std::time_t timeCounter = std::time(nullptr); (std::time(nullptr) - timeCounter) < 5;){
+        
+        //Build a little countdown message.
+        std::string checkMessage("netinfo.json not found. Has ghettod run?_Retrying in ");
+        checkMessage += std::to_string( ((std::time(nullptr) - timeCounter) - 5));
+        checkMessage += "s";
+        statusDbox.clean();
+        statusDbox.make(checkMessage.c_str());
+      }
+      
+      //Try loading the file again.
+      ifNetInfoFile.open(netInfoPath.c_str());
+    }
   }
+  
   
   
   //Get the 

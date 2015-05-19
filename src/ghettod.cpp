@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <cstdint>
+
+//autotools includes
 #include "config.h"
 
 //MHD includes
@@ -28,6 +31,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <microhttpd.h>
+
+//json includes
+#include "jsoncons/json.hpp"
 
 //Defines
 #define GHETTO_PORT 6770 //G(HE)TTO
