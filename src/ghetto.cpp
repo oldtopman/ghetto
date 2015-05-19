@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //General includes
 #include <unistd.h> //gethostname
 #include <pwd.h> //user's home directory
-#include <errno.h>
+#include <errno.h> //error handling
 #include <stdio.h>
 #include <fstream>
 #include <stdlib.h>
@@ -38,9 +38,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //autotools includes
 #include "config.h"
 
-//libcurl includes
-#include <curl/curl.h>
-
 //ncurses includes
 #include <ncurses.h>
 
@@ -53,12 +50,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //Defines
 #define GHETTO_PORT 6770 //G(HE)TTO
- 
-static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
-{
-  int written = fwrite(ptr, size, nmemb, (FILE *)stream);
-  return written;
-}
  
 int main(int argc, char* argv[]){
   
@@ -94,20 +85,6 @@ int main(int argc, char* argv[]){
   std::string settingsPath(ghettoPath + "/config");
   std::string netInfoPath(ghettoPath + "/netinfo.json");
   
-  /**********************
-   * File initialization *
-   **********************/
-  
-  //TODO: Remove this
-  static const char * bodyfilename = "body.out";
-  FILE * bodyfile;
-  
-  bodyfile = fopen(bodyfilename, "wb");
-  if(!bodyfile) {
-    return -1;
-  }
-  
-  
   /*********************
   * Initialize ncurses *
   *********************/ 
@@ -128,15 +105,6 @@ int main(int argc, char* argv[]){
   else{
     errorDbox.make("No color support here._You should really upgrade your terminal._:(");
   }
-  
-  
-  /*************************
-  * Libcurl initialization *
-  *************************/
- 
-  curl_global_init(CURL_GLOBAL_NOTHING); //Assume libcurl was compiled with minimal features
-  
-  char curlError[CURL_ERROR_SIZE]; //Handle curl errors.
   
   /****************************************************
   *****************************************************
@@ -215,23 +183,6 @@ int main(int argc, char* argv[]){
   }
   
   
-  
-  //Initialize our handle
-  CURL *curlHandle;
-  curlHandle = curl_easy_init();
- 
-  //Configure handle
-  curl_easy_setopt(curlHandle, CURLOPT_URL, "http://localhost:6770");
-  curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, write_data);
-  curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, bodyfile);
-  curl_easy_setopt(curlHandle, CURLOPT_ERRORBUFFER, curlError);
- 
-  //Execute handle
-  if(curl_easy_perform(curlHandle) != CURLE_OK){
-    
-    //Handle errors.
-    errorDbox.make(curlError);
-  }
  
   /**********
   * Cleanup *
@@ -239,8 +190,6 @@ int main(int argc, char* argv[]){
   
   //TODO: Move most of these to atexits?
   endwin();
-  fclose(bodyfile);
-  curl_easy_cleanup(curlHandle);
  
   return 0;
 }

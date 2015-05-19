@@ -1,5 +1,3 @@
-bin_PROGRAMS = ghetto ghettod
-
 NCURSES_MENU_CPP = submodules/ncurses-menu/dialogBox.cpp submodules/ncurses-menu/menu.cpp
 JSONCONS_HPP = src/jsoncons/json.hpp \
 	src/jsoncons/json1.hpp \
@@ -18,11 +16,10 @@ JSONCONS_HPP = src/jsoncons/json.hpp \
 	src/jsoncons/output_format.hpp \
 	src/jsoncons/parse_error_handler.hpp
 
+bin_PROGRAMS = ghetto ghettod
 
 ghetto_SOURCES = ghetto.cpp $(NCURSES_MENU_CPP) $(JSONCONS_HPP)
-#ghetto_HEADERS = $(JSONCONS_HPP)
-ghetto_LDADD = $(CURL_LIBS) -lncurses
+ghetto_LDADD = -lncurses
 
 ghettod_SOURCES = ghettod.cpp  $(JSONCONS_HPP)
-#ghettod_HEADERS = $(JSONCONS_HPP)
-ghettod_LDADD = $(MHD_LIBS)
+ghettod_LDADD = $(MHD_LIBS) $(CURL_LIBS)

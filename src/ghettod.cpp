@@ -32,11 +32,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sys/socket.h>
 #include <microhttpd.h>
 
+//libcurl includes
+#include <curl/curl.h>
+
 //json includes
 #include "jsoncons/json.hpp"
 
 //Defines
 #define GHETTO_PORT 6770 //G(HE)TTO
+
+static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
+{
+  int written = fwrite(ptr, size, nmemb, (FILE *)stream);
+  return written;
+}
 
 static std::string pageText;
 
@@ -60,6 +69,15 @@ int main(int argc, char* argv[]){
   /**********************
   * File initialization *
   **********************/
+  
+  //TODO: Remove this
+  static const char * bodyfilename = "body.out";
+  FILE * bodyfile;
+  
+  bodyfile = fopen(bodyfilename, "wb");
+  if(!bodyfile) {
+    return -1;
+  }
   
   static const char * pagefilename = "pagefile";
   std::ifstream pagefile;
@@ -85,11 +103,36 @@ int main(int argc, char* argv[]){
     return 1;
   }
   
+  /*************************
+   * Libcurl initialization *
+   *************************/
+  
+  curl_global_init(CURL_GLOBAL_NOTHING); //Assume libcurl was compiled with minimal features
+  
+  char curlError[CURL_ERROR_SIZE]; //Handle curl errors.
+  
   /****************************************************
   *****************************************************
   ******************* BEGIN PROGRAM *******************
   *****************************************************
   ****************************************************/
+  
+  //Initialize our handle
+  CURL *curlHandle;
+  curlHandle = curl_easy_init();
+  
+  //Configure handle
+  curl_easy_setopt(curlHandle, CURLOPT_URL, "http://localhost:6770");
+  curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, write_data);
+  curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, bodyfile);
+  curl_easy_setopt(curlHandle, CURLOPT_ERRORBUFFER, curlError);
+  
+  //Execute handle
+  if(curl_easy_perform(curlHandle) != CURLE_OK){
+    
+    //Handle errors.
+    std::cout << curlError << std::endl;
+  }
   
   //Don't exit immidiately.
   getchar ();
@@ -98,5 +141,7 @@ int main(int argc, char* argv[]){
   * Cleanup *
   **********/
   MHD_stop_daemon (daemon);
+  fclose(bodyfile);
+  curl_easy_cleanup(curlHandle);
   return 0;
 }
