@@ -182,8 +182,10 @@ int main(int argc, char* argv[]){
       ifNetInfoFile.open(netInfoPath.c_str());
     }
   }
-  //Parse the json file.
-  try{ jsoncons::json netInfoJson = jsoncons::json::parse(ifNetInfoFile); }
+  
+  //Create/Parse the json file.
+  jsoncons::json netInfoJson;
+  try{ netInfoJson = jsoncons::json::parse(ifNetInfoFile); }
   catch(const jsoncons::json_parse_exception& e){
     //Handle bad parsing
     std::string parseError;
@@ -198,8 +200,36 @@ int main(int argc, char* argv[]){
     return 1;
   }
   
+  //Check to see if we can parse the file.
+  if(GHETTOJSON_VERSION < netInfoJson["ver_oldghetto"].as<int>()){
+    
+    //We're too old to parse the file.
+    errorDbox.make("This version of ghetto(d) is too old to run.\nPlease update.");
+    endwin();
+    return 2;
+  }
   
- 
+  //We can also check to see if there are any updates.
+  if(GHETTOJSON_VERSION < netInfoJson["ver_ghetto"].as<int>()){
+    
+    //Updates available...somewhere.
+    errorDbox.make("Updates are available for ghetto!");
+  }
+  
+  //Check to see how stale the results are.
+  if((std::time(nullptr) - netInfoJson["time_generated"].as<int>()) > 400){
+    
+    //Daemon hasn't updated the file in a long time.
+    errorDbox.make("Network info file is stale - is ghettod running?");
+  }
+  
+  else if((std::time(nullptr) - netInfoJson["time_lastrecieved"].as<int>()) > 700){
+    
+    //We're not connected to the network
+    errorDbox.make("ghettod can't find the 'hood.\nResults out of date.");
+  }
+  
+  
   /**********
   * Cleanup *
   **********/

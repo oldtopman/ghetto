@@ -38,6 +38,12 @@ AC_CHECK_TYPES([ptrdiff_t])
 AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([gethostname mkdir])
 
+####
+##Checks complete, begin ghetto-specific script parts.
+####
+AC_DEFINE([GHETTOJSON_VERSION],[0],[Current version of the format used for the network json file.])
+AC_DEFINE([GHETTOJSON_OLDVERSION],[0],[Oldest version of ghettojson that will open this version's files.])
+
 AC_CONFIG_FILES([Makefile
                  src/Makefile])
 AC_OUTPUT
