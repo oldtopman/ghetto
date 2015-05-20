@@ -52,6 +52,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define GHETTO_PORT 6770 //G(HE)TTO
  
 int main(int argc, char* argv[]){
+  //using jsoncons::json;
   
   /***********************
   * Variable declaration *
@@ -103,7 +104,7 @@ int main(int argc, char* argv[]){
   //Turn color on if supported.
   if(has_colors() == true){ start_color(); }
   else{
-    errorDbox.make("No color support here._You should really upgrade your terminal._:(");
+    errorDbox.make("No color support here._You should really upgrade your terminal.\n:(");
   }
   
   /****************************************************
@@ -128,7 +129,7 @@ int main(int argc, char* argv[]){
       //If mkdir failed, find out why and tell.
       statusDbox.clean();
       if(errno == EROFS){
-        errorDbox.make("Setting initialization failed:_Read only filesystem.");
+        errorDbox.make("Setting initialization failed:\nRead only filesystem.");
         return 1;
       }
       if(errno == EEXIST){
@@ -136,7 +137,7 @@ int main(int argc, char* argv[]){
         //But that ghetto hasn't run before.
       }
       else{
-        std::string errorString("Unknown error encountered calling mkdir()_See man mkdir() for details_ errno=");
+        std::string errorString("Unknown error encountered calling mkdir()\nSee man mkdir() for details\n errno=");
         errorString += std::to_string( errno );
         errorDbox.make(errorString.c_str());
         return 1;
@@ -170,7 +171,7 @@ int main(int argc, char* argv[]){
       for(std::time_t timeCounter = std::time(nullptr); (std::time(nullptr) - timeCounter) < 6;){
         
         //Build a little countdown message.
-        std::string checkMessage("netinfo.json not found. Has ghettod run?_Retrying in ");
+        std::string checkMessage("netinfo.json not found. Has ghettod run?\nRetrying in ");
         checkMessage += std::to_string( 5 - ((std::time(nullptr) - timeCounter)) );
         checkMessage += "s";
         statusDbox.clean();
@@ -180,6 +181,21 @@ int main(int argc, char* argv[]){
       //Try loading the file again.
       ifNetInfoFile.open(netInfoPath.c_str());
     }
+  }
+  //Parse the json file.
+  try{ jsoncons::json netInfoJson = jsoncons::json::parse(ifNetInfoFile); }
+  catch(const jsoncons::json_parse_exception& e){
+    //Handle bad parsing
+    std::string parseError;
+    parseError = "Caught json_parse_exception with category ";
+    parseError += e.code().category().name();
+    parseError += ", code ";
+    parseError += e.code().value();
+    parseError += "\nmessage: ";
+    parseError += e.what();
+    errorDbox.make(parseError.c_str());
+    endwin();
+    return 1;
   }
   
   

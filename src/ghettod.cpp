@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <cstring>
 #include <cstdint>
+#include <pwd.h> //user id stuff
 
 //autotools includes
 #include "config.h"
@@ -65,6 +66,32 @@ static int answer_to_connection (void *cls, struct MHD_Connection *connection, c
 }
 
 int main(int argc, char* argv[]){
+  
+  /**************************
+   * Variable initialization *
+   **************************/
+  
+  //Get hostname
+  char hostname[65];
+  if(gethostname(hostname, 65)){
+    std::cout << "Could not get hostname. Exiting." << std::endl;
+    return 1;
+  }
+  
+  //Get homePath
+  std::string homePath("");
+  if ((homePath = getenv("HOME")) == "") { //Use $HOME before looking it up ourselves.
+    homePath = getpwuid(getuid())->pw_dir;
+  }
+  if(homePath == ""){
+    std::cout << "Could not get homePath. Exiting." << std::endl;
+    return 1;
+  }
+  
+  //Set other paths
+  std::string ghettoPath(homePath + "/.ghetto");
+  std::string netInfoPath(ghettoPath + "/netinfo.json");
+  std::string workingNetInfoPath(ghettoPath + "/workingnetinfo.json");
   
   /**********************
   * File initialization *
