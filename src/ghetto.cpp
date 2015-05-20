@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h> //gethostname
 #include <pwd.h> //user's home directory
 #include <errno.h> //error handling
+#include <new> //new
 #include <stdio.h>
 #include <fstream>
 #include <stdlib.h>
@@ -266,15 +267,15 @@ int main(int argc, char* argv[]){
   //Count the number of computers in the file.
   //TODO: Move this to the top of the program?
   int computerCount = complist.end_elements() - complist.begin_elements();
-  computer computers[computerCount];
+  
+  //Allocate computers from the heap since we could have a lot.
+  computer * computers = new computer[computerCount];
   
   //TODO: Move this into a separate file, with the rest of the parsing stuff.
   //Populate the computers array.
+  //Remember, we're incrementing the iterator and the counter variable.
   jsoncons::json activeComputerJson;
-  
   jsoncons::json::array_iterator complistIterator = complist.begin_elements();
-  
-  
   for(int i = 0; i < computerCount; i++){
     activeComputerJson = complistIterator->as<jsoncons::json>();
     computers[i].name = activeComputerJson["name"].as_string();
@@ -292,6 +293,7 @@ int main(int argc, char* argv[]){
   **********/
   
   //TODO: Move most of these to atexits?
+  delete[] computers;
   endwin();
  
   return 0;

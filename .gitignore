@@ -7,6 +7,7 @@
 *kate-swp
 *.~lock*
 *.dSYM
+build/*
 
 #ignores for automake crap
 *autom4te.cache
