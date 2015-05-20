@@ -58,6 +58,8 @@ int main(int argc, char* argv[]){
   * Variable declaration *
   ***********************/
   
+  //TODO: Move some up here.
+  //TODO: Consistently name variables (json, file, etc.)
   //None yet
   
   /**************************
@@ -223,12 +225,67 @@ int main(int argc, char* argv[]){
     errorDbox.make("Network info file is stale - is ghettod running?");
   }
   
+  //If ghettod is updating, see how long since it last networked.
   else if((std::time(nullptr) - netInfoJson["time_lastrecieved"].as<int>()) > 700){
     
     //We're not connected to the network
     errorDbox.make("ghettod can't find the 'hood.\nResults out of date.");
   }
   
+  //Since we're able to parse the file, parse it!
+  
+  //TODO: Move this struct declaration somewhere else.
+  struct computer{
+    std::string name;
+    std::string host;
+    std::string message;
+    std::time_t updateTime;
+    unsigned long long uptime;
+    int jumpCount;
+  };
+  
+  //Extract complist from the netinfo.
+  statusDbox.clean();
+  statusDbox.make("Extracting complist.");
+  jsoncons::json complist;
+  try{ complist = netInfoJson.get("complist"); }
+  catch(const jsoncons::json_parse_exception& e){
+    //Handle bad parsing
+    std::string parseError;
+    parseError = "Caught json_parse_exception with category ";
+    parseError += e.code().category().name();
+    parseError += ", code ";
+    parseError += e.code().value();
+    parseError += "\nmessage: ";
+    parseError += e.what();
+    errorDbox.make(parseError.c_str());
+    endwin();
+    return 1;
+  }
+  
+  //Count the number of computers in the file.
+  //TODO: Move this to the top of the program?
+  int computerCount = complist.end_elements() - complist.begin_elements();
+  computer computers[computerCount];
+  
+  //TODO: Move this into a separate file, with the rest of the parsing stuff.
+  //Populate the computers array.
+  jsoncons::json activeComputerJson;
+  
+  jsoncons::json::array_iterator complistIterator = complist.begin_elements();
+  
+  
+  for(int i = 0; i < computerCount; i++){
+    activeComputerJson = complistIterator->as<jsoncons::json>();
+    computers[i].name = activeComputerJson["name"].as_string();
+    computers[i].host = activeComputerJson["host"].as_string();
+    computers[i].message = activeComputerJson["message"].as_string();
+    computers[i].updateTime = activeComputerJson["update_time"].as<unsigned long long>();
+    computers[i].uptime = activeComputerJson["uptime"].as<unsigned long long>();
+    computers[i].jumpCount = activeComputerJson["jump_count"].as<int>();
+    complistIterator++;
+  }
+    
   
   /**********
   * Cleanup *

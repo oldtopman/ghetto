@@ -1,0 +1,25 @@
+{
+  "ver_ghetto":0,
+  "ver_oldghetto":0,
+  "time_lastrecieved":1337,
+  "time_generated":31337,
+  "complist" : [
+    {
+      "name": "test",
+      "uptime": 1337,
+      "host": "192.168.2.11",
+      "jump_count":0,
+      "message":"hiya",
+      "update_time":31337
+    },
+    {
+      "name": "test2",
+      "uptime": 6770,
+      "host": "127.0.0.1",
+      "jump_count":1,
+      "message":"yo",
+      "update_time":1337
+    }
+  ]
+}
+
