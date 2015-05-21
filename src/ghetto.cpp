@@ -243,6 +243,7 @@ int main(int argc, char* argv[]){
     std::time_t updateTime;
     unsigned long long uptime;
     int jumpCount;
+    bool online;
   };
   
   //Extract complist from the netinfo.
@@ -284,9 +285,46 @@ int main(int argc, char* argv[]){
     computers[i].updateTime = activeComputerJson["update_time"].as<unsigned long long>();
     computers[i].uptime = activeComputerJson["uptime"].as<unsigned long long>();
     computers[i].jumpCount = activeComputerJson["jump_count"].as<int>();
+    computers[i].online = activeComputerJson["online"].as<bool>();
     complistIterator++;
   }
+  
+  /*******************************************************
+   *******************************************************
+   ******************* BEGIN INTERFACE *******************
+   *******************************************************
+   ******************************************************/
+  
+  /**********************************************************
+  * Quick outline of the plan:                              *
+  * Write our computer info on the top of the window (dbox) *
+  * Write menu with other computers below our info.         *
+  * When computer is selected, display info (somewhere)     *
+  * ???                                                     *
+  * Get famous for writing ghetto                           *
+  **********************************************************/
+  //TODO: Move to other file. Getting sick of how large this function is becoming, even for quick work.
+  
+  Menu computerMenu;
+  
+  //Generate menu string.
+  //Fortunately, jsoncons sorts stuff alphabetically, so it will appear sorted without any work.
+  std::string computerMenuString("");
+  for(int i = 0; i < computerCount; i++){
     
+    //Indicate online status
+    if(computers[i].online){ computerMenuString += "O : "; }
+    else{ computerMenuString += "X : "; }
+    
+    //Add computer name.
+    computerMenuString += computers[i].name;
+    
+    //Newline to prepare for the next computer.
+    computerMenuString += ",";
+  }
+  
+  computerMenu.quickMake(computerMenuString.c_str(), 0, 0, 10);
+  
   
   /**********
   * Cleanup *

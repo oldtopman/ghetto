@@ -10,7 +10,8 @@
       "host": "192.168.2.11",
       "jump_count":0,
       "message":"hiya",
-      "update_time":31337
+      "update_time":31337,
+      "online":true
     },
     {
       "name": "test2",
@@ -18,7 +19,8 @@
       "host": "127.0.0.1",
       "jump_count":1,
       "message":"yo",
-      "update_time":1337
+      "update_time":1337,
+      "online":true
     }
   ]
 }
