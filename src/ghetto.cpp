@@ -368,6 +368,8 @@ int main(int argc, char* argv[]){
     
     //TODO: Display system info dbox
     
+    //TODO: Get menu to stay still when scrolling.
+    //BUGFIX: ^^
     //Draw computer select menu.
     std::string computerMenuString("");
     for(int i = 0; i < computerCount; i++){
