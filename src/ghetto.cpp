@@ -357,24 +357,53 @@ int main(int argc, char* argv[]){
   
   //Generate other computer menus.
   Menu computerMenu;
+  DialogBox computerDetails;
+  computerDetails.options(15,3,0,false);
   
   //Generate menu string.
-  //Fortunately, jsoncons sorts stuff alphabetically, so it will appear sorted without any work.
-  std::string computerMenuString("");
-  for(int i = 0; i < computerCount; i++){
+  //Fortunately, jsoncons sorts stuff alphabetically, so it will appear sorted without any work. (ish)
+  while(true){ //TODO: Make this the main loop
     
-    //Indicate online status
-    if(computers[i].online){ computerMenuString += "O : "; }
-    else{ computerMenuString += "X : "; }
+    //TODO: Clear display
     
-    //Add computer name.
-    computerMenuString += computers[i].name;
+    //TODO: Display system info dbox
     
-    //Newline to prepare for the next computer.
-    computerMenuString += ",";
+    //Draw computer select menu.
+    std::string computerMenuString("");
+    for(int i = 0; i < computerCount; i++){
+      
+      //Indicate online status
+      if(computers[i].online){ computerMenuString += "O : "; }
+      else{ computerMenuString += "X : "; }
+      
+      //Add computer name.
+      computerMenuString += computers[i].name;
+      
+      //Newline to prepare for the next computer.
+      computerMenuString += ",";
+    }
+    
+    int selectedComputerIndex = computerMenu.quickMake(computerMenuString.c_str(), 0, 3, 10);
+    selectedComputerIndex--; //Menu is count-from-one.
+    
+    //Display appropiate computer's details.
+    std::string computerDetailString("");
+    computerDetailString += computers[selectedComputerIndex].name;
+    computerDetailString += "@";
+    computerDetailString += computers[selectedComputerIndex].host;
+    computerDetailString += "\n";
+    computerDetailString += "msg: ";
+    computerDetailString += computers[selectedComputerIndex].message;
+    computerDetailString += "\n";
+    computerDetailString += "upd-upt-jmp\n";
+    computerDetailString += std::to_string(computers[selectedComputerIndex].updateTime);
+    computerDetailString += "-";
+    computerDetailString += std::to_string(computers[selectedComputerIndex].uptime);
+    computerDetailString += "-";
+    computerDetailString += std::to_string(computers[selectedComputerIndex].jumpCount);
+    computerDetails.clean();
+    computerDetails.make(computerDetailString.c_str());
   }
-  
-  computerMenu.quickMake(computerMenuString.c_str(), 0, 3, 10);
   
   
   /**********
