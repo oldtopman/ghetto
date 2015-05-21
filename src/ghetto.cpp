@@ -61,7 +61,7 @@ int main(int argc, char* argv[]){
   
   //TODO: Move some up here.
   //TODO: Consistently name variables (json, file, etc.)
-  //None yet
+  bool latestGhetto;
   
   /**************************
    * Variable initialization *
@@ -217,6 +217,11 @@ int main(int argc, char* argv[]){
     
     //Updates available...somewhere.
     errorDbox.make("Updates are available for ghetto!");
+    latestGhetto = false;
+  }else{
+    
+    //We are up to date, at least in our network.
+    latestGhetto = true;
   }
   
   //Check to see how stale the results are.
@@ -290,10 +295,13 @@ int main(int argc, char* argv[]){
   }
   
   /*******************************************************
-   *******************************************************
-   ******************* BEGIN INTERFACE *******************
-   *******************************************************
-   ******************************************************/
+  ********************************************************
+  ******************** BEGIN INTERFACE *******************
+  ********************************************************
+  *******************************************************/
+  clear();
+  refresh();
+  
   
   /**********************************************************
   * Quick outline of the plan:                              *
@@ -305,6 +313,49 @@ int main(int argc, char* argv[]){
   **********************************************************/
   //TODO: Move to other file. Getting sick of how large this function is becoming, even for quick work.
   
+  //Generate dialogbox with our computer info.
+  DialogBox computerInfo;
+  computerInfo.options(0,0,0,false);
+  
+  int ourComputerIndex = -1;
+  //First, we have to find our computer - it has a jump of 0.
+  for(int i = 0; i < computerCount; i++){
+    
+    //If this is our computer
+    if(computers[i].jumpCount == 0){
+      ourComputerIndex = i;
+      break;
+    }
+  }
+  
+  if(ourComputerIndex < 0){ //Couldn't find our computer in the index
+    
+    //Is it because ghetto is out of date?
+    if(latestGhetto == false){
+      computerInfo.make("Can't find information on this system.\nConsider updating ghetto.");
+    }
+    
+    //Nope. Complain anyway.
+    else{
+      computerInfo.make("Can't find information on this system.\nThis should *not* occur in normal usage.");
+    }
+  }else{
+    
+    //Found our computer - build header.
+    std::string infoString("This is ");
+    infoString += computers[ourComputerIndex].name;
+    infoString += " at ";
+    infoString += computers[ourComputerIndex].host;
+    infoString += " - uptime: ";
+    infoString += std::to_string(computers[ourComputerIndex].uptime);
+    infoString += "\n";
+    
+    infoString += computers[ourComputerIndex].message;
+    
+    computerInfo.make(infoString.c_str());
+  }
+  
+  //Generate other computer menus.
   Menu computerMenu;
   
   //Generate menu string.
@@ -323,7 +374,7 @@ int main(int argc, char* argv[]){
     computerMenuString += ",";
   }
   
-  computerMenu.quickMake(computerMenuString.c_str(), 0, 0, 10);
+  computerMenu.quickMake(computerMenuString.c_str(), 0, 3, 10);
   
   
   /**********
