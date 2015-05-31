@@ -1,3 +1,5 @@
+SHARED_CPP_FILES = json.cpp
+SHARED_H_FILES = json.h
 NCURSES_MENU_CPP = submodules/ncurses-menu/dialogBox.cpp submodules/ncurses-menu/menu.cpp
 JSONCONS_HPP = src/jsoncons/json.hpp \
 	src/jsoncons/json1.hpp \
@@ -18,8 +20,12 @@ JSONCONS_HPP = src/jsoncons/json.hpp \
 
 bin_PROGRAMS = ghetto ghettod
 
-ghetto_SOURCES = ghetto.cpp $(NCURSES_MENU_CPP) $(JSONCONS_HPP)
+ghettodir = .
+ghetto_SOURCES = ghetto.cpp $(SHARED_CPP_FILES) $(NCURSES_MENU_CPP) $(JSONCONS_HPP)
+ghetto_HEADERS = $(SHARED_HEADER_FILES)
 ghetto_LDADD = -lncurses
 
-ghettod_SOURCES = ghettod.cpp  $(JSONCONS_HPP)
+ghettoddir = .
+ghettod_SOURCES = ghettod.cpp $(SHARED_CPP_FILES) $(JSONCONS_HPP)
+ghettod_HEADERS = $(SHARED_HEADER_DIELS)
 ghettod_LDADD = $(MHD_LIBS) $(CURL_LIBS)
