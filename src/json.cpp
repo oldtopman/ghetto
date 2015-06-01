@@ -15,4 +15,41 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "jsoncons/json.hpp"
+#include "json.h"
 
+int openJsonFile(const char * p_filePath, jsoncons::json& p_json){
+  
+  //First, open the file.
+  std::ifstream fileStream(p_filePath);
+  if(!fileStream){
+    //error somehow
+    //TODO: Error handling.
+    return -1;
+  }
+  
+  //Parse the file now.
+  try{
+    p_json = jsoncons::json::parse(fileStream);
+  }
+  catch(const jsoncons::json_parse_exception& e){
+    //error somehow
+    /*
+    std::string parseError;
+    parseError = "Caught json_parse_exception with category ";
+    parseError += e.code().category().name();
+    parseError += ", code ";
+    parseError += e.code().value();
+    parseError += "\nmessage: ";
+    parseError += e.what();
+    errorDbox.make(parseError.c_str());
+    endwin();
+    return 1;
+    */
+    //TODO: Error handling.
+    return -1;
+  }
+  
+  //Whee, no errors!
+  return 0;
+}

@@ -49,6 +49,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //json includes
 #include "jsoncons/json.hpp"
 
+//Includes for this project.
+#include "json.h"
+
 //Defines
 #define GHETTO_PORT 6770 //G(HE)TTO
  
@@ -162,45 +165,25 @@ int main(int argc, char* argv[]){
   statusDbox.make("Loading network info...");
   
   //Load the json file that has all the info about the network.
-  std::ifstream ifNetInfoFile(netInfoPath.c_str());
+  jsoncons::json netInfoJson;
   
   //Errors on loading are going to indicate a problem with ghettod not running.
   //We're assuming that all errors are file not found.
   //TODO: Handle other load file errors.
-  if(!ifNetInfoFile){
-    //Loop until the file loads
-    while(!ifNetInfoFile){
-      //Retry every 5 seconds.
-      for(std::time_t timeCounter = std::time(nullptr); (std::time(nullptr) - timeCounter) < 6;){
-        
-        //Build a little countdown message.
-        std::string checkMessage("netinfo.json not found. Has ghettod run?\nRetrying in ");
-        checkMessage += std::to_string( 5 - ((std::time(nullptr) - timeCounter)) );
-        checkMessage += "s";
-        statusDbox.clean();
-        statusDbox.make(checkMessage.c_str());
-      }
+  while(!openJsonFile(netInfoPath.c_str(), netInfoJson) ){
+    //Retry every 5 seconds.
+    for(std::time_t timeCounter = std::time(nullptr); (std::time(nullptr) - timeCounter) < 6;){
       
-      //Try loading the file again.
-      ifNetInfoFile.open(netInfoPath.c_str());
+      //Build a little countdown message.
+      std::string checkMessage("netinfo.json not found (maybe). Has ghettod run?\nRetrying in ");
+      checkMessage += std::to_string( 5 - ((std::time(nullptr) - timeCounter)) );
+      checkMessage += "s";
+      statusDbox.clean();
+      statusDbox.make(checkMessage.c_str());
     }
-  }
-  
-  //Create/Parse the json file.
-  jsoncons::json netInfoJson;
-  try{ netInfoJson = jsoncons::json::parse(ifNetInfoFile); }
-  catch(const jsoncons::json_parse_exception& e){
-    //Handle bad parsing
-    std::string parseError;
-    parseError = "Caught json_parse_exception with category ";
-    parseError += e.code().category().name();
-    parseError += ", code ";
-    parseError += e.code().value();
-    parseError += "\nmessage: ";
-    parseError += e.what();
-    errorDbox.make(parseError.c_str());
-    endwin();
-    return 1;
+    
+    //Try loading the file again.
+    openJsonFile(netInfoPath.c_str(), netInfoJson);
   }
   
   //Check to see if we can parse the file.

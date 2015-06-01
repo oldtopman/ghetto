@@ -16,3 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "jsoncons/json.hpp"
+
+#ifndef JSON_H_INCLUDED
+#define JSON_H_INCLUDED
+
+int openJsonFile(const char * p_filePath, jsoncons::json& p_json);
+
+#endif
