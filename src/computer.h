@@ -15,13 +15,24 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "jsoncons/json.hpp"
 
-#ifndef JSON_H_INCLUDED
-#define JSON_H_INCLUDED
+//TODO: Refactor this whole thing as an object?
 
-int openJsonFile(const char * p_filePath, jsoncons::json& p_json);
-int countArrayElements(jsoncons::json & p_json);
+struct computer{
+  std::string name;
+  std::string host;
+  std::string message;
+  std::time_t updateTime;
+  unsigned long long uptime;
+  int jumpCount;
+  bool online;
+};
 
-#endif
+int computerCount(jsoncons::json & p_netInfoJson);
+
+class ComputerIndex{
+  //etc
+  //etc
+  //etc
+}

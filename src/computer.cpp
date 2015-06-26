@@ -15,45 +15,27 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "jsoncons/json.hpp"
-#include "json.h"
+#include "computer.h"
 
-int openJsonFile(const char * p_filePath, jsoncons::json& p_json){
+int computerCount(jsoncons::json & p_netInfoJson){
   
-  //First, open the file.
-  std::ifstream fileStream(p_filePath);
-  if(!fileStream){
-    //error somehow
-    //TODO: Error handling.
-    return -1;
-  }
+  //Find the computer list and parse it.
   
-  //Parse the file now.
-  try{
-    p_json = jsoncons::json::parse(fileStream);
-  }
+  //TODO: Cache the complist so we don't have to parse this more than once.
+  jsoncons::json complist;
+  try{ complist = p_netInfoJson.get("complist"); }
   catch(const jsoncons::json_parse_exception& e){
-    //error somehow
-    /*
-    std::string parseError;
-    parseError = "Caught json_parse_exception with category ";
-    parseError += e.code().category().name();
-    parseError += ", code ";
-    parseError += e.code().value();
-    parseError += "\nmessage: ";
-    parseError += e.what();
-    errorDbox.make(parseError.c_str());
-    endwin();
-    return 1;
-    */
-    //TODO: Error handling.
+    //Handle bad parsing
+    //TODO: Some kind of generic json error handling?
     return -1;
   }
   
-  //Whee, no errors!
-  return 0;
+  return (complist.end_elements() - complist.begin_elements());
 }
 
-int countArrayElements(jsoncons::json & p_json){
-  return (p_json.end_elements() - p_json.begin_elements());
-}
+int populateComputer(computer p_computerList[], jsoncons::json p_computerList){
+  
+  //Parse a computer at the given offset.
+  
