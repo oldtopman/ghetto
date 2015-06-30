@@ -171,7 +171,7 @@ int main(int argc, char* argv[]){
   //Errors on loading are going to indicate a problem with ghettod not running.
   //We're assuming that all errors are file not found.
   //TODO: Handle other load file errors.
-  while(!openJsonFile(netInfoPath.c_str(), netInfoJson) ){
+  while(openJsonFile(netInfoPath.c_str(), netInfoJson) ){
     //Retry every 5 seconds.
     for(std::time_t timeCounter = std::time(nullptr); (std::time(nullptr) - timeCounter) < 6;){
       
@@ -182,9 +182,6 @@ int main(int argc, char* argv[]){
       statusDbox.clean();
       statusDbox.make(checkMessage.c_str());
     }
-    
-    //Try loading the file again.
-    openJsonFile(netInfoPath.c_str(), netInfoJson);
   }
   
   //Check to see if we can parse the file.

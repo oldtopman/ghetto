@@ -67,8 +67,8 @@ int ComputerIndex::jcount(int p_index)
 {
   if(p_index > houses)
     return -1;
-  
   return computerVector[p_index].jumpCount;
+  //return tmp.jumpCount;
 }
 
 
@@ -96,6 +96,11 @@ int ComputerIndex::parse(jsoncons::json p_computerList)
     return -1;
   }
   
+  //Count elements and reserve vector space.
+  houses = (complist.end_elements() - complist.begin_elements());
+  if(houses > computerVector.size())
+    computerVector.reserve(houses);
+  
   jsoncons::json activeComputerJson;
   jsoncons::json::array_iterator complistIterator = complist.begin_elements();
   computer tmpcomp;
@@ -113,6 +118,5 @@ int ComputerIndex::parse(jsoncons::json p_computerList)
     complistIterator++;
   }
   
-  houses = (complist.end_elements() - complist.begin_elements());
   return 0;
 }
