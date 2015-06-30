@@ -1,5 +1,5 @@
-SHARED_CPP_FILES = json.cpp
-SHARED_H_FILES = json.h
+SHARED_CPP_FILES = json.cpp computer.cpp
+SHARED_H_FILES = json.h computer.h
 NCURSES_MENU_CPP = submodules/ncurses-menu/dialogBox.cpp submodules/ncurses-menu/menu.cpp
 JSONCONS_HPP = src/jsoncons/json.hpp \
 	src/jsoncons/json1.hpp \

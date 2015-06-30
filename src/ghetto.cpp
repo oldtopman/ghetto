@@ -228,29 +228,8 @@ int main(int argc, char* argv[]){
   statusDbox.clean();
   statusDbox.make("Extracting complist.");
   
-  //Count the number of computers in the file.
-  //TODO: Move this to the top of the program?
-  int numberOfComputers = computerCount(netInfoJson);
-  
-  //Allocate computers from the heap since we could have a lot.
-  computer * computers = new computer[numberOfComputers];
-  
-  //TODO: Move this into a separate file, with the rest of the parsing stuff.
-  //Populate the computers array.
-  //Remember, we're incrementing the iterator and the counter variable.
-  jsoncons::json activeComputerJson;
-  jsoncons::json::array_iterator complistIterator = complist.begin_elements();
-  for(int i = 0; i < numberOfComputers; i++){
-    activeComputerJson = complistIterator->as<jsoncons::json>();
-    computers[i].name = activeComputerJson["name"].as_string();
-    computers[i].host = activeComputerJson["host"].as_string();
-    computers[i].message = activeComputerJson["message"].as_string();
-    computers[i].updateTime = activeComputerJson["update_time"].as<unsigned long long>();
-    computers[i].uptime = activeComputerJson["uptime"].as<unsigned long long>();
-    computers[i].jumpCount = activeComputerJson["jump_count"].as<int>();
-    computers[i].online = activeComputerJson["online"].as<bool>();
-    complistIterator++;
-  }
+  ComputerIndex * computers = new ComputerIndex;
+  computers->parse(netInfoJson);
   
   /*******************************************************
   ********************************************************
@@ -277,10 +256,10 @@ int main(int argc, char* argv[]){
   
   int ourComputerIndex = -1;
   //First, we have to find our computer - it has a jump of 0.
-  for(int i = 0; i < numberOfComputers; i++){
+  for(int i = 0; i < computers->count(); i++){
     
     //If this is our computer
-    if(computers[i].jumpCount == 0){
+    if(computers->jcount(i) == 0){
       ourComputerIndex = i;
       break;
     }
@@ -301,14 +280,14 @@ int main(int argc, char* argv[]){
     
     //Found our computer - build header.
     std::string infoString("This is ");
-    infoString += computers[ourComputerIndex].name;
+    infoString += computers->name(ourComputerIndex);
     infoString += " at ";
-    infoString += computers[ourComputerIndex].host;
+    infoString += computers->host(ourComputerIndex);
     infoString += " - uptime: ";
-    infoString += std::to_string(computers[ourComputerIndex].uptime);
+    infoString += std::to_string(computers->uptime(ourComputerIndex));
     infoString += "\n";
     
-    infoString += computers[ourComputerIndex].message;
+    infoString += computers->msg(ourComputerIndex);
     
     computerInfo.make(infoString.c_str());
   }
@@ -330,14 +309,14 @@ int main(int argc, char* argv[]){
     //BUGFIX: ^^
     //Draw computer select menu.
     std::string computerMenuString("");
-    for(int i = 0; i < numberOfComputers; i++){
+    for(int i = 0; i < computers->count(); i++){
       
       //Indicate online status
-      if(computers[i].online){ computerMenuString += "O : "; }
+      if(computers->online(i)){ computerMenuString += "O : "; }
       else{ computerMenuString += "X : "; }
       
       //Add computer name.
-      computerMenuString += computers[i].name;
+      computerMenuString += computers->name(i);
       
       //Newline to prepare for the next computer.
       computerMenuString += ",";
@@ -348,19 +327,19 @@ int main(int argc, char* argv[]){
     
     //Display appropiate computer's details.
     std::string computerDetailString("");
-    computerDetailString += computers[selectedComputerIndex].name;
+    computerDetailString += computers->name(selectedComputerIndex);
     computerDetailString += "@";
-    computerDetailString += computers[selectedComputerIndex].host;
+    computerDetailString += computers->host(selectedComputerIndex);
     computerDetailString += "\n";
     computerDetailString += "msg: ";
-    computerDetailString += computers[selectedComputerIndex].message;
+    computerDetailString += computers->msg(selectedComputerIndex);
     computerDetailString += "\n";
     computerDetailString += "upd-upt-jmp\n";
-    computerDetailString += std::to_string(computers[selectedComputerIndex].updateTime);
+    computerDetailString += std::to_string(computers->time(selectedComputerIndex));
     computerDetailString += "-";
-    computerDetailString += std::to_string(computers[selectedComputerIndex].uptime);
+    computerDetailString += std::to_string(computers->uptime(selectedComputerIndex));
     computerDetailString += "-";
-    computerDetailString += std::to_string(computers[selectedComputerIndex].jumpCount);
+    computerDetailString += std::to_string(computers->jcount(selectedComputerIndex));
     computerDetails.clean();
     computerDetails.make(computerDetailString.c_str());
   }

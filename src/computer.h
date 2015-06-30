@@ -15,10 +15,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <vector>
 #include "jsoncons/json.hpp"
 
-//TODO: Refactor this whole thing as an object?
-
+//TODO: Rename several of these for briefness
 struct computer{
   std::string name;
   std::string host;
@@ -29,10 +29,33 @@ struct computer{
   bool online;
 };
 
-int computerCount(jsoncons::json & p_netInfoJson);
-
 class ComputerIndex{
-  //etc
-  //etc
-  //etc
-}
+  
+  private:
+  std::vector<computer> computerVector;
+  jsoncons::json complist;
+  int houses;
+  
+  public:
+  
+  //accessors for the struct.
+  std::string name(int p_index);
+  std::string host(int p_index);
+  std::string msg(int p_index);
+  std::time_t time(int p_index);
+  unsigned long long uptime(int p_index);
+  int jcount(int p_index);
+  bool online(int p_index);
+  
+  //generic accessors
+  int count();
+  
+  //actual functions
+  int parse(jsoncons::json p_computerList);
+  
+  ComputerIndex():
+  houses(0)
+  {
+    //constructor
+  }
+};

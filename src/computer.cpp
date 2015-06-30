@@ -18,24 +18,101 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "jsoncons/json.hpp"
 #include "computer.h"
+std::string ComputerIndex::name(int p_index)
+{
+  if(p_index > houses)
+    return "out of bounds";
+  
+  return computerVector[p_index].name;
+}
 
-int computerCount(jsoncons::json & p_netInfoJson){
+
+std::string ComputerIndex::host(int p_index)
+{
+  if(p_index > houses)
+    return "out of bounds";
   
-  //Find the computer list and parse it.
+  return computerVector[p_index].host;
+}
+
+
+std::string ComputerIndex::msg(int p_index)
+{
+  if(p_index > houses)
+    return "out of bounds";
   
-  //TODO: Cache the complist so we don't have to parse this more than once.
-  jsoncons::json complist;
-  try{ complist = p_netInfoJson.get("complist"); }
+  return computerVector[p_index].message;
+}
+
+
+time_t ComputerIndex::time(int p_index)
+{
+  if(p_index > houses)
+    return -1;
+  
+  return computerVector[p_index].updateTime;
+}
+
+
+unsigned long long ComputerIndex::uptime(int p_index)
+{
+  if(p_index > houses)
+    return 0;
+  
+  return computerVector[p_index].uptime;
+}
+
+
+int ComputerIndex::jcount(int p_index)
+{
+  if(p_index > houses)
+    return -1;
+  
+  return computerVector[p_index].jumpCount;
+}
+
+
+bool ComputerIndex::online(int p_index)
+{
+  if(p_index > houses)
+    return false;
+  
+  return computerVector[p_index].online;
+}
+
+
+int ComputerIndex::count(){
+  return houses;
+}
+
+int ComputerIndex::parse(jsoncons::json p_computerList)
+{
+  
+  //TODO: Put all of these json constants in json.h
+  try{ complist = p_computerList.get("complist"); }
   catch(const jsoncons::json_parse_exception& e){
     //Handle bad parsing
     //TODO: Some kind of generic json error handling?
     return -1;
   }
   
-  return (complist.end_elements() - complist.begin_elements());
+  jsoncons::json activeComputerJson;
+  jsoncons::json::array_iterator complistIterator = complist.begin_elements();
+  computer tmpcomp;
+  
+  for(int i = 0; i < houses; i++){
+    activeComputerJson = complistIterator->as<jsoncons::json>();
+    tmpcomp.name = activeComputerJson["name"].as_string();
+    tmpcomp.host = activeComputerJson["host"].as_string();
+    tmpcomp.message = activeComputerJson["message"].as_string();
+    tmpcomp.updateTime = activeComputerJson["update_time"].as<unsigned long long>();
+    tmpcomp.uptime = activeComputerJson["uptime"].as<unsigned long long>();
+    tmpcomp.jumpCount = activeComputerJson["jump_count"].as<int>();
+    tmpcomp.online = activeComputerJson["online"].as<bool>();
+    computerVector.push_back(tmpcomp);
+    complistIterator++;
+  }
+  
+  houses = (complist.end_elements() - complist.begin_elements());
+  return 0;
 }
-
-int populateComputer(computer p_computerList[], jsoncons::json p_computerList){
-  
-  //Parse a computer at the given offset.
-  
