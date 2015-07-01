@@ -322,7 +322,7 @@ int main(int argc, char* argv[]){
   **********/
   
   //TODO: Move most of these to atexits?
-  delete[] computers;
+  delete computers;
   endwin();
  
   return 0;
