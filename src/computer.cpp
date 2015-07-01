@@ -96,15 +96,14 @@ int ComputerIndex::parse(jsoncons::json p_computerList)
     return -1;
   }
   
-  //Count elements and reserve vector space.
+  //Count elements
   houses = (complist.end_elements() - complist.begin_elements());
-  if(houses > computerVector.size())
-    computerVector.reserve(houses);
   
   jsoncons::json activeComputerJson;
   jsoncons::json::array_iterator complistIterator = complist.begin_elements();
   computer tmpcomp;
   
+  //TODO: Put all of these json constants in json.h
   for(int i = 0; i < houses; i++){
     activeComputerJson = complistIterator->as<jsoncons::json>();
     tmpcomp.name = activeComputerJson["name"].as_string();
