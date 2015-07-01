@@ -21,8 +21,8 @@ JSONCONS_HPP = src/jsoncons/json.hpp \
 bin_PROGRAMS = ghetto ghettod
 
 ghettodir = .
-ghetto_SOURCES = ghetto.cpp $(SHARED_CPP_FILES) $(NCURSES_MENU_CPP) $(JSONCONS_HPP)
-ghetto_HEADERS = $(SHARED_HEADER_FILES)
+ghetto_SOURCES = ghetto.cpp mainmenu.cpp $(SHARED_CPP_FILES) $(NCURSES_MENU_CPP) $(JSONCONS_HPP)
+ghetto_HEADERS = mainmenu.h $(SHARED_HEADER_FILES)
 ghetto_LDADD = -lncurses
 
 ghettoddir = .

@@ -52,6 +52,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //Includes for this project.
 #include "json.h"
 #include "computer.h"
+#include "mainmenu.h"
 
 //Defines
 #define GHETTO_PORT 6770 //G(HE)TTO
@@ -305,40 +306,14 @@ int main(int argc, char* argv[]){
     //TODO: Get menu to stay still when scrolling.
     //BUGFIX: ^^
     //Draw computer select menu.
-    std::string computerMenuString("");
-    for(int i = 0; i < computers->count(); i++){
-      
-      //Indicate online status
-      if(computers->online(i)){ computerMenuString += "O : "; }
-      else{ computerMenuString += "X : "; }
-      
-      //Add computer name.
-      computerMenuString += computers->name(i);
-      
-      //Newline to prepare for the next computer.
-      computerMenuString += ",";
-    }
+    std::string computerMenuString(gen_comp_menu(computers));
     
     int selectedComputerIndex = computerMenu.quickMake(computerMenuString.c_str(), 0, 3, 10);
     selectedComputerIndex--; //Menu is count-from-one.
     
     //Display appropiate computer's details.
-    std::string computerDetailString("");
-    computerDetailString += computers->name(selectedComputerIndex);
-    computerDetailString += "@";
-    computerDetailString += computers->host(selectedComputerIndex);
-    computerDetailString += "\n";
-    computerDetailString += "msg: ";
-    computerDetailString += computers->msg(selectedComputerIndex);
-    computerDetailString += "\n";
-    computerDetailString += "upd-upt-jmp\n";
-    computerDetailString += std::to_string(computers->time(selectedComputerIndex));
-    computerDetailString += "-";
-    computerDetailString += std::to_string(computers->uptime(selectedComputerIndex));
-    computerDetailString += "-";
-    computerDetailString += std::to_string(computers->jcount(selectedComputerIndex));
     computerDetails.clean();
-    computerDetails.make(computerDetailString.c_str());
+    computerDetails.make(gen_comp_details(computers, selectedComputerIndex));
   }
   
   

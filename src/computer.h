@@ -18,6 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include "jsoncons/json.hpp"
 
+#ifndef COMPUTER_H_DEFINED
+#define COMPUTER_H_DEFINED
+
 //TODO: Rename several of these for briefness
 struct computer{
   std::string name;
@@ -59,3 +62,5 @@ class ComputerIndex{
     //constructor
   }
 };
+
+#endif
