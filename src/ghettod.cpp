@@ -190,6 +190,8 @@ int main(int argc, char* argv[]){
       
       //Declare variables?
       //TODO: Move variable declaration up here
+      
+      //TODO: All of this needs to be on the stack
       jsoncons::json netinfo;
       jsoncons::json stale_netinfo;
       ComputerIndex computers;
@@ -223,18 +225,23 @@ int main(int argc, char* argv[]){
       wrkcomp.online = true;
       computers.append(wrkcomp);
       
-      //Import local computers with 0 penalty
+      //---Import local computers with 0 penalty
       
       //Import local netinfo
       if(openJsonFile(netInfoPath.c_str(), stale_netinfo)){
         //TODO: Handle different openJsonFile errors.
       }
+      stale_computers.parse(stale_netinfo);
       
-      //Attempt to contact other computers in the network, 1 penalty.
+      //Construct list of people to contact
       
-      //Convert vector into json array.
+      //---Attempt to contact other computers in the network, 1 penalty.
+      
+      //---Copy over the leftover stale computers into the array.
       
       //Append array to netinfo
+      
+      //finalize netinfo json
       
       //Write netinfo
       
