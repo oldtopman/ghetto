@@ -45,7 +45,7 @@ std::string ComputerIndex::msg(int p_index)
 }
 
 
-time_t ComputerIndex::time(int p_index)
+uint64_t ComputerIndex::time(int p_index)
 {
   if(p_index > houses)
     return -1;
@@ -80,6 +80,10 @@ bool ComputerIndex::online(int p_index)
   return computerVector[p_index].online;
 }
 
+void ComputerIndex::append(computer p_comp)
+{
+  computerVector.push_back(p_comp);
+}
 
 int ComputerIndex::count(){
   return houses;
@@ -117,5 +121,27 @@ int ComputerIndex::parse(jsoncons::json p_computerList)
     complistIterator++;
   }
   
+  ComputerIndex::gen_from_vector();
   return 0;
 }
+
+
+void ComputerIndex::gen_from_vector(){
+  complist.clear();
+  jsoncons::json computerJson;
+  
+  //We could address the vector directly, but this makes
+  //vector access easier to secure.
+  for(int i = 0; i < computerVector.size(); i++){
+    computerJson["name"] = ComputerIndex::name(i);
+    computerJson["host"] = ComputerIndex::host(i);
+    computerJson["message"] = ComputerIndex::msg(i);
+    computerJson["update_time"] = ComputerIndex::time(i);
+    computerJson["uptime"] = ComputerIndex::uptime(i);
+    computerJson["jump_count"] = ComputerIndex::jcount(i);
+    computerJson["online"] = ComputerIndex::online(i);
+    complist.add(computerJson);
+  }
+  
+}
+

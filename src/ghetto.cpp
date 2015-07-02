@@ -195,6 +195,9 @@ int main(int argc, char* argv[]){
   }
   
   //We can also check to see if there are any updates.
+  //TODO: Check taint rather than version.
+  //version would only differ between ghettod/ghetto versions,
+  //while taint spans the whole network.
   if(GHETTOJSON_VERSION < netInfoJson["ver_ghetto"].as<int>()){
     
     //Updates available...somewhere.

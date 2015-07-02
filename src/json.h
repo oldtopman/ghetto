@@ -20,8 +20,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef JSON_H_INCLUDED
 #define JSON_H_INCLUDED
-
+  
 int openJsonFile(const char * p_filePath, jsoncons::json& p_json);
 int countArrayElements(jsoncons::json & p_json);
+
+//TODO: Rename several of these for briefness
+struct computer{
+  std::string name;
+  std::string host;
+  std::string message;
+  std::uint64_t updateTime;
+  unsigned long long uptime;
+  int jumpCount;
+  bool online;
+};
+
+struct ni_outline{
+  int ver_ghetto;
+  int ver_oldghetto;
+  int ver_ghettotaint;
+  uint64_t time_lastrecieved;
+  uint64_t time_generated;
+};
+int gen_ni_outline(ni_outline p_nio, jsoncons::json & p_json);
 
 #endif

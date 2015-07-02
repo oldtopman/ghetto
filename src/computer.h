@@ -17,27 +17,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <vector>
 #include "jsoncons/json.hpp"
+#include "json.h"
 
 #ifndef COMPUTER_H_DEFINED
 #define COMPUTER_H_DEFINED
-
-//TODO: Rename several of these for briefness
-struct computer{
-  std::string name;
-  std::string host;
-  std::string message;
-  std::time_t updateTime;
-  unsigned long long uptime;
-  int jumpCount;
-  bool online;
-};
 
 class ComputerIndex{
   
   private:
   std::vector<computer> computerVector;
   jsoncons::json complist;
-  int houses;
+  int houses; //TODO: Name this variable better
   
   public:
   
@@ -45,16 +35,18 @@ class ComputerIndex{
   std::string name(int p_index);
   std::string host(int p_index);
   std::string msg(int p_index);
-  std::time_t time(int p_index);
+  std::uint64_t time(int p_index);
   unsigned long long uptime(int p_index);
   int jcount(int p_index);
   bool online(int p_index);
   
   //generic accessors
+  void append(computer p_comp);
   int count();
   
   //actual functions
   int parse(jsoncons::json p_computerList);
+  void gen_from_vector();
   
   ComputerIndex():
   houses(0)

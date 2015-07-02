@@ -57,3 +57,12 @@ int openJsonFile(const char * p_filePath, jsoncons::json& p_json){
 int countArrayElements(jsoncons::json & p_json){
   return (p_json.end_elements() - p_json.begin_elements());
 }
+
+int gen_ni_outline(ni_outline p_nio, jsoncons::json & p_json){
+  p_json["ver_ghetto"] = p_nio.ver_ghetto;
+  p_json["ver_oldghetto"] = p_nio.ver_oldghetto;
+  p_json["ver_ghettotaint"] = p_nio.ver_ghettotaint;
+  p_json["time_lastrecieved"] = p_nio.time_lastrecieved;
+  p_json["time_generated"] = p_nio.time_generated;
+  return 0;
+}
