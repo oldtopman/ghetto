@@ -20,8 +20,21 @@
 namespace jsoncons {
 
 template <typename Char>
+class buffered_ostream;
+
+template <typename Char>
 class basic_output_format
 {
+    int indent_;
+    int precision_;
+    bool replace_nan_;
+    bool replace_pos_inf_;
+    bool replace_neg_inf_;
+    std::basic_string<Char> nan_replacement_;
+    std::basic_string<Char> pos_inf_replacement_;
+    std::basic_string<Char> neg_inf_replacement_;
+    bool escape_all_non_ascii_;
+    bool escape_solidus_;
 public:
     static const size_t default_indent = 4;
 
@@ -30,8 +43,7 @@ public:
     basic_output_format()
         :
         indent_(default_indent),
-        precision_(16),
-        floatfield_(std::ios_base::fmtflags(0)),
+        precision_(15),
         replace_nan_(true),
         replace_pos_inf_(true),
         replace_neg_inf_(true),
@@ -45,12 +57,12 @@ public:
 
 //  Accessors
 
-    size_t indent() const
+    int indent() const
     {
         return indent_;
     }
 
-    size_t precision() const
+    int precision() const
     {
         return precision_;
     }
@@ -88,7 +100,7 @@ public:
 
 //  Modifiers
 
-    void precision(size_t prec)
+    void precision(int prec)
     {
         precision_ = prec;
     }
@@ -139,40 +151,17 @@ public:
         neg_inf_replacement_ = replacement;
     }
 
-    std::ios_base::fmtflags floatfield() const
-    {
-        return floatfield_;
-    }
-
-    void floatfield(std::ios_base::fmtflags flags)
-    {
-        floatfield_ = flags;
-    }
-
-    void indent(size_t value)
+    void indent(int value)
     {
         indent_ = value;
     }
-private:
-    size_t indent_;
-    size_t precision_;
-    std::ios_base::fmtflags floatfield_;
-
-    bool replace_nan_;
-    bool replace_pos_inf_;
-    bool replace_neg_inf_;
-    std::basic_string<Char> nan_replacement_;
-    std::basic_string<Char> pos_inf_replacement_;
-    std::basic_string<Char> neg_inf_replacement_;
-    bool escape_all_non_ascii_;
-    bool escape_solidus_;
 };
 
 template<typename Char>
 void escape_string(const Char* s,
                    size_t length,
                    const basic_output_format<Char>& format,
-                   std::basic_ostream<Char>& os)
+                   buffered_ostream<Char>& os)
 {
     const Char* begin = s;
     const Char* end = s + length;
@@ -182,36 +171,39 @@ void escape_string(const Char* s,
         switch (c)
         {
         case '\\':
-            os << '\\' << '\\';
+            os.put('\\'); 
+            os.put('\\');
             break;
         case '"':
-            os << '\\' << '\"';
+            os.put('\\'); 
+            os.put('\"');
             break;
         case '\b':
-            os << '\\' << 'b';
+            os.put('\\'); 
+            os.put('b');
             break;
         case '\f':
-            os << '\\';
-            os << 'f';
+            os.put('\\');
+            os.put('f');
             break;
         case '\n':
-            os << '\\';
-            os << 'n';
+            os.put('\\');
+            os.put('n');
             break;
         case '\r':
-            os << '\\';
-            os << 'r';
+            os.put('\\');
+            os.put('r');
             break;
         case '\t':
-            os << '\\';
-            os << 't';
+            os.put('\\');
+            os.put('t');
             break;
         default:
             uint32_t u(c >= 0 ? c : 256 + c);
             if (format.escape_solidus() && c == '/')
             {
-                os << '\\';
-                os << '/';
+                os.put('\\');
+                os.put('/');
             }
             else if (is_control_character(u) || format.escape_all_non_ascii())
             {
@@ -225,42 +217,42 @@ void escape_string(const Char* s,
                         uint32_t first = (cp >> 10) + 0xD800;
                         uint32_t second = ((cp & 0x03FF) + 0xDC00);
 
-                        os << '\\';
-                        os << 'u';
-                        os << to_hex_character(first >> 12 & 0x000F);
-                        os << to_hex_character(first >> 8  & 0x000F);
-                        os << to_hex_character(first >> 4  & 0x000F);
-                        os << to_hex_character(first     & 0x000F);
-                        os << '\\';
-                        os << 'u';
-                        os << to_hex_character(second >> 12 & 0x000F);
-                        os << to_hex_character(second >> 8  & 0x000F);
-                        os << to_hex_character(second >> 4  & 0x000F);
-                        os << to_hex_character(second     & 0x000F);
+                        os.put('\\');
+                        os.put('u');
+                        os.put(to_hex_character(first >> 12 & 0x000F));
+                        os.put(to_hex_character(first >> 8  & 0x000F));
+                        os.put(to_hex_character(first >> 4  & 0x000F));
+                        os.put(to_hex_character(first     & 0x000F));
+                        os.put('\\');
+                        os.put('u');
+                        os.put(to_hex_character(second >> 12 & 0x000F));
+                        os.put(to_hex_character(second >> 8  & 0x000F));
+                        os.put(to_hex_character(second >> 4  & 0x000F));
+                        os.put(to_hex_character(second     & 0x000F));
                     }
                     else
                     {
-                        os << '\\';
-                        os << 'u';
-                        os << to_hex_character(cp >> 12 & 0x000F);
-                        os << to_hex_character(cp >> 8  & 0x000F);
-                        os << to_hex_character(cp >> 4  & 0x000F);
-                        os << to_hex_character(cp     & 0x000F);
+                        os.put('\\');
+                        os.put('u');
+                        os.put(to_hex_character(cp >> 12 & 0x000F));
+                        os.put(to_hex_character(cp >> 8  & 0x000F));
+                        os.put(to_hex_character(cp >> 4  & 0x000F));
+                        os.put(to_hex_character(cp     & 0x000F));
                     }
                 }
                 else
                 {
-                    os << c;
+                    os.put(c);
                 }
             }
             else if (format.escape_solidus() && c == '/')
             {
-                os << '\\';
-                os << '/';
+                os.put('\\');
+                os.put('/');
             }
             else
             {
-                os << c;
+                os.put(c);
             }
             break;
         }
