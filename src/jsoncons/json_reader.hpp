@@ -27,12 +27,21 @@ template<typename Char>
 class basic_json_reader 
 {
     static const size_t default_max_buffer_length = 16384;
+
+    basic_json_parser<Char> parser_;
+    std::basic_istream<Char> *is_;
+    basic_parse_error_handler<Char> *err_handler_;
+    bool eof_;
+    std::vector<Char> buffer_;
+    size_t buffer_length_;
+    size_t buffer_capacity_;
+    size_t index_;
 public:
     basic_json_reader(std::basic_istream<Char>& is,
                       basic_json_input_handler<Char>& handler)
         : parser_(handler),
           is_(std::addressof(is)),
-          err_handler_(std::addressof(default_basic_parse_error_handler<Char>::instance())),
+          err_handler_(std::addressof(basic_default_parse_error_handler<Char>::instance())),
           eof_(false),
           buffer_length_(0),
           buffer_capacity_(default_max_buffer_length),
@@ -156,15 +165,6 @@ public:
     {
         parser_.max_nesting_depth(depth);
     }
-private:
-    basic_json_parser<Char> parser_;
-    std::basic_istream<Char> *is_;
-    basic_parse_error_handler<Char> *err_handler_;
-    bool eof_;
-    std::vector<Char> buffer_;
-    size_t buffer_length_;
-    size_t buffer_capacity_;
-    size_t index_;
 };
 
 typedef basic_json_reader<char> json_reader;

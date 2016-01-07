@@ -20,34 +20,44 @@
 #include <cstdarg>
 #include <limits> // std::numeric_limits
 
-#define JSONCONS_NO_MACRO_EXP 
+#define JSONCONS_NO_MACRO_EXP
 
-namespace jsoncons {
+namespace jsoncons
+{
 
 // Follow boost
 
 #if defined (__clang__)
-#   if defined(_GLIBCXX_USE_NOEXCEPT)
-#      define JSONCONS_NOEXCEPT _GLIBCXX_USE_NOEXCEPT
-#   else
-#      define JSONCONS_NOEXCEPT noexcept
-#   endif
-#elif defined(__GNUC__)
-#   define JSONCONS_NOEXCEPT _GLIBCXX_USE_NOEXCEPT
-#elif defined(_MSC_VER)
-#   if _MSC_VER >= 1900
-#       define JSONCONS_NOEXCEPT noexcept
-#   else
-#       define JSONCONS_NOEXCEPT
-#   endif
+#if defined(_GLIBCXX_USE_NOEXCEPT)
+#define JSONCONS_NOEXCEPT _GLIBCXX_USE_NOEXCEPT
 #else
-#   define JSONCONS_NOEXCEPT
+#define JSONCONS_NOEXCEPT noexcept
+#endif
+#elif defined(__GNUC__)
+#define JSONCONS_NOEXCEPT _GLIBCXX_USE_NOEXCEPT
+#elif defined(_MSC_VER)
+#if _MSC_VER >= 1900
+#define JSONCONS_NOEXCEPT noexcept
+#else
+#define JSONCONS_NOEXCEPT
+#endif
+#else
+#define JSONCONS_NOEXCEPT
 #endif
 
+#if defined(_MSC_VER)
+#if _MSC_VER >= 1900
+#define JSONCONS_ALIGNOF alignof
+#else
+#define JSONCONS_ALIGNOF __alignof
+#endif
+#else
+#define JSONCONS_ALIGNOF alignof
+#endif
 
 #ifdef _MSC_VER
 #pragma warning( disable : 4290 )
-inline bool is_nan(double x) { return _isnan( x ) != 0; }
+inline bool is_nan(double x) { return _isnan(x) != 0; }
 inline bool is_inf(double x)
 {
     return !_finite(x) && !_isnan(x);
@@ -62,20 +72,18 @@ inline bool is_neg_inf(double x)
 }
 
 inline
-int c99_vsnprintf(char* str, size_t size, const char* format, va_list ap)
+int c99_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 {
     int count = -1;
 
-    if (size != 0)
-        count = _vsnprintf_s(str, size, _TRUNCATE, format, ap);
-    if (count == -1)
-        count = _vscprintf(format, ap);
+    if (size != 0) count = _vsnprintf_s(str, size, _TRUNCATE, format, ap);
+    if (count == -1) count = _vscprintf(format, ap);
 
     return count;
 }
 
 inline
-int c99_snprintf(char* str, size_t size, const char* format, ...)
+int c99_snprintf(char *str, size_t size, const char *format, ...)
 {
     int count;
     va_list ap;
@@ -87,9 +95,12 @@ int c99_snprintf(char* str, size_t size, const char* format, ...)
     return count;
 }
 #else
-inline bool is_nan(double x) { return std::isnan( x ); }
-inline bool is_pos_inf(double x) {return std::isinf(x) && x > 0;}
-inline bool is_neg_inf(double x) {return  std::isinf(x) && x > 0;}
+inline bool is_nan(double x)
+{ return std::isnan( x ); }
+inline bool is_pos_inf(double x)
+{return std::isinf(x) && x > 0;}
+inline bool is_neg_inf(double x)
+{return  std::isinf(x) && x > 0;}
 
 #if __cplusplus >= 201103L
 #define c99_snprintf snprintf
@@ -99,11 +110,42 @@ inline bool is_neg_inf(double x) {return  std::isinf(x) && x > 0;}
 
 #endif
 
-#ifdef _MSC_VER
-template <typename Char>
-std::basic_string<Char> float_to_string(double val, size_t precision)
+template<typename Char>
+std::basic_string<Char> float_to_string(double val, int precision)
 {
-    std::basic_string<Char> s;
+	std::basic_ostringstream<Char> ss;
+    ss.imbue(std::locale::classic());
+    {
+        buffered_ostream<Char> os(ss);
+        print_float(val, precision, os);
+    }
+	return ss.str();
+}
+
+template <typename Char>
+class buffered_ostream;
+
+template <typename Char>
+class float_printer
+{
+    int precision_;
+public:
+    float_printer(int precision)
+        : precision_(precision)
+    {
+    }
+
+    void print(double val, buffered_ostream<Char>& os)
+    {
+    	print_float(val, precision_, os);
+    }
+};
+
+#ifdef _MSC_VER
+
+template<typename Char>
+void print_float(double val, int precision, buffered_ostream<Char>& os)
+{
     char buf[_CVTBUFSIZE];
     int decimal_point = 0;
     int sign = 0;
@@ -113,77 +155,102 @@ std::basic_string<Char> float_to_string(double val, size_t precision)
         precision = _CVTBUFSIZE - 1;
     }
 
-    int err = _ecvt_s(buf, _CVTBUFSIZE, val, static_cast<int>(precision), &decimal_point, &sign);
+    int err = _ecvt_s(buf, _CVTBUFSIZE, val, precision, &decimal_point, &sign);
     if (err != 0)
     {
         throw std::runtime_error("Failed attempting double to string conversion");
     }
-    if (sign != 0)
-    {
-        s.push_back('-');
-    }
+    char* s = buf;
+    char* s0 = s;
+	char* se = s + precision;
 
-    int len = static_cast<int>(precision);
+    int i, k;
+    int j;
 
-    int decimal;
-    int exponent;
-    if (decimal_point < 0 || decimal_point > len)
+    if (sign)
     {
-        decimal = 1;
-        exponent = decimal_point - 1;
+        os.put('-');
     }
-    else
+    if (decimal_point <= -4 || decimal_point > se - s + 5) 
     {
-        decimal = decimal_point;
-        exponent = 0;
-    }
-
-    while (len >= 2 && buf[len - 1] == '0' && (len - 1) != decimal)
-    {
-        --len;
-    }
-
-    if (decimal == 0)
-    {
-        s.push_back('0');
-        s.push_back('.');
-    }
-    s.push_back(buf[0]);
-    for (int i = 1; i < len; ++i)
-    {
-        if (i == decimal)
+        os.put(*s++);
+        if (s < se) 
         {
-            s.push_back('.');
+            os.put('.');
+            while ((se-1) > s && *(se-1) == '0')
+            {
+                --se;
+            }
+			
+            while(s < se)
+            {
+                os.put(*s++);
+            }
         }
-        s.push_back(buf[i]);
-    }
-    if (exponent != 0)
-    {
-        s.push_back('e');
-        if (exponent > 0)
-        {
-            s.push_back('+');
-        }
-        int err2 = _itoa_s(exponent,buf,_CVTBUFSIZE,10);
-        if (err2 != 0)
-        {
-            throw std::runtime_error("Failed attempting double to string conversion");
-        }
-        for (int i = 0; i < _CVTBUFSIZE && buf[i]; ++i)
-        {
-            s.push_back(buf[i]);
+        os.put('e');
+        /* sprintf(b, "%+.2d", decimal_point - 1); */
+        if (--decimal_point < 0) {
+            os.put('-');
+            decimal_point = -decimal_point;
+            }
+        else
+            os.put('+');
+        for(j = 2, k = 10; 10*k <= decimal_point; j++, k *= 10);
+        for(;;) 
+		{
+            i = decimal_point / k;
+            os.put(i + '0');
+            if (--j <= 0)
+                break;
+            decimal_point -= i*k;
+            decimal_point *= 10;
         }
     }
-    return s;
+    else if (decimal_point <= 0) 
+    {
+        os.put('0');
+        os.put('.');
+        while ((se-1) > s && *(se-1) == '0')
+        {
+            --se;
+        }
+        for(; decimal_point < 0; decimal_point++)
+        {
+            os.put('0');
+        }
+		while(s < se)
+        {
+            os.put(*s++);
+        }
+	}
+    else {
+        while(s < se) 
+        {
+            os.put(*s++);
+			if ((--decimal_point == 0) && s < se)
+			{
+                os.put('.');
+				while ((se-1) > s && *(se-1) == '0')
+				{
+					--se;
+				}
+			}
+        }
+        for(; decimal_point > 0; decimal_point--)
+        {
+            os.put('0');
+        }
+	}
 }
+
 #else
 template <typename Char>
-std::basic_string<Char> float_to_string(double val, size_t precision)
+void print_float(double val, int precision, buffered_ostream<Char>& os)
 {
-    std::basic_ostringstream<Char> os;
-    os.imbue(std::locale::classic());
-    os << std::showpoint << std::setprecision(precision) << val;
-    std::basic_string<Char> s(os.str());
+    std::basic_ostringstream<Char> ss;
+    ss.imbue(std::locale::classic());
+    ss << std::showpoint << std::setprecision(precision) << val;
+    std::basic_string<Char> s(ss.str());
 
     typename std::basic_string<Char>::size_type exp_pos= s.find('e');
     std::basic_string<Char> exp;
@@ -193,7 +260,7 @@ std::basic_string<Char> float_to_string(double val, size_t precision)
         s.erase(exp_pos);
     }
 
-    int len = s.size();
+    int len = (int)s.size();
     while (len >= 2 && s[len - 1] == '0' && s[len - 2] != '.')
     {
         --len;
@@ -204,53 +271,101 @@ std::basic_string<Char> float_to_string(double val, size_t precision)
         s.append(exp);
     }
 
-    return s;
+    os.write(s.c_str(),s.length());
 }
 #endif
 
+// string_to_float only requires narrow char
 #ifdef _MSC_VER
-inline
-double string_to_float(const std::string& s)
+class float_reader
 {
-    static _locale_t locale = _create_locale(LC_NUMERIC, "C");
-
-    const char* begin = &s[0];
-    char* end = const_cast<char*>(begin)+s.size();
-    double val = _strtod_l(begin,&end,locale);
-    if (begin == end)
+private:
+    _locale_t locale;
+public:
+    float_reader()
     {
-        throw std::invalid_argument("Invalid float value");
+        locale = _create_locale(LC_NUMERIC, "C");
     }
-    return val;
-}
-inline
-double string_to_float(const std::wstring& s)
-{
-    static _locale_t locale = _create_locale(LC_NUMERIC, "C");
 
-    const wchar_t* begin = &s[0];
-    wchar_t* end = const_cast<wchar_t*>(begin)+s.size();
-    double val = _wcstod_l(begin,&end,locale);
-    if (begin == end)
-    {
-        throw std::invalid_argument("Invalid float value");
-    }
-    return val;
-}
+	double read(const char* s, size_t length)
+	{
+        const char *begin = s;
+        char *end = nullptr;
+        double val = _strtod_l(begin, &end, locale);
+        if (begin == end)
+        {
+            throw std::invalid_argument("Invalid float value");
+        }
+        return val;
+	}
+};
+
 #else
-template <typename Char> inline
-double string_to_float(const std::basic_string<Char>& s)
+class float_reader
 {
-    std::basic_istringstream<Char> ss(s);
-    ss.imbue(std::locale::classic());
-    double val;
-    ss >> val;
-    if (ss.fail())
+private:
+    std::vector<char> buffer_;
+    std::string decimal_point_;
+	bool is_dot_;
+public:
+    float_reader()
+        : buffer_()
     {
-        throw std::invalid_argument("Invalid float value");
+        struct lconv * lc = localeconv();
+        if (lc != nullptr)
+        {
+            decimal_point_ = std::string(lc->decimal_point);	
+        }
+        else
+        {
+            decimal_point_ = std::string("."); 
+        }
+		buffer_.reserve(100);
+		is_dot_ = decimal_point_ == ".";
     }
-    return val;
-}
+
+	double read(const char* s, size_t length)
+	{
+        double val;
+        if (is_dot_)
+        {
+            const char *begin = s;
+            char *end = nullptr;
+            val = strtod(begin, &end);
+            if (begin == end)
+            {
+                throw std::invalid_argument("Invalid float value");
+            }
+        }
+        else
+        {
+            buffer_.clear();
+            size_t j = 0;
+            const char* pe = s + length;
+            for (const char* p = s; p < pe; ++p)
+            {
+                if (*p == '.')
+                {
+                    buffer_.insert(buffer_.begin() + j, decimal_point_.begin(), decimal_point_.end());
+                    j += decimal_point_.length();
+                }
+                else
+                {
+                    buffer_.push_back(*p);
+                    ++j;
+                }
+            }
+            const char *begin = &buffer_[0];
+            char *end = nullptr;
+            val = strtod(begin, &end);
+            if (begin == end)
+            {
+                throw std::invalid_argument("Invalid float value");
+            }
+        }
+		return val;
+	}
+};
 #endif
 
 }

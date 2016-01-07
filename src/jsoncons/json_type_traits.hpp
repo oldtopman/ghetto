@@ -227,7 +227,7 @@ public:
     static typename basic_json<Char, Alloc>::object as(basic_json<Char, Alloc> rhs)
     {
 		JSONCONS_ASSERT(rhs.is_object());
-		return rhs.object_value();
+		return rhs.members();
     }
     static void assign(basic_json<Char, Alloc>& lhs, typename basic_json<Char, Alloc>::object rhs)
     {
@@ -246,7 +246,7 @@ public:
     static typename basic_json<Char, Alloc>::array as(const basic_json<Char, Alloc>& rhs)
     {
 		JSONCONS_ASSERT(rhs.is_array());
-        return rhs.array_value();
+        return rhs.elements();
     }
     static void assign(basic_json<Char, Alloc>& lhs, typename basic_json<Char, Alloc>::array rhs)
     {
@@ -539,6 +539,24 @@ public:
     static void assign(basic_json<Char, Alloc>& lhs, double rhs)
     {
         lhs.assign_double(rhs);
+    }
+};
+
+template<typename Char, typename Alloc>
+class json_type_traits<Char, Alloc, float>
+{
+public:
+    static bool is(const basic_json<Char, Alloc>& rhs)
+    {
+        return rhs.is_double();
+    }
+    static double as(const basic_json<Char, Alloc>& rhs)
+    {
+        return static_cast<float>(rhs.as_double());
+    }
+    static void assign(basic_json<Char, Alloc>& lhs, float rhs)
+    {
+        lhs.assign_double(static_cast<double>(rhs));
     }
 };
 
