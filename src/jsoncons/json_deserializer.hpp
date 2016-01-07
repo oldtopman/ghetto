@@ -24,244 +24,219 @@ namespace jsoncons {
 template <typename Char,class Alloc>
 class basic_json_deserializer : public basic_json_input_handler<Char>
 {
-    static const int default_depth = 100;
-
     struct stack_item
     {
-        std::basic_string<Char> name;
-        basic_json<Char,Alloc> value;
+        stack_item(bool is_object, size_t minimum_structure_capacity)
+            : is_object_(is_object)
+        {
+            minimum_structure_capacity_ = minimum_structure_capacity;
+            if (is_object_)
+            {
+                object_ = new json_object_impl<Char,Alloc>();
+                object_->reserve(minimum_structure_capacity);
+            }
+            else
+            {
+                array_ = new json_array_impl<Char,Alloc>();
+                array_->reserve(minimum_structure_capacity);
+            }
+        }
+
+        void destroy()
+        {
+            try
+            {
+                if (is_object_)
+                {
+                    delete object_;
+                }
+                else
+                {
+                    delete array_;
+                }
+            }
+            catch (...)
+            {
+                // no throw
+            }
+        }
+
+        bool is_object() const
+        {
+            return is_object_;
+        }
+        bool is_array() const
+        {
+            return !is_object_;
+        }
+
+        json_object_impl<Char,Alloc>* release_object() {json_object_impl<Char,Alloc>* p(0); std::swap(p,object_); return p;}
+
+        json_array_impl<Char,Alloc>* release_array() {json_array_impl<Char,Alloc>* p(0); std::swap(p,array_); return p;}
+
+        std::basic_string<Char> name_;
+        bool is_object_;
+        json_object_impl<Char,Alloc>* object_;
+        json_array_impl<Char,Alloc>* array_;
+        size_t minimum_structure_capacity_;
     };
 
 public:
-    basic_json_deserializer()
-        : top_(-1),
-          stack_(default_depth),
-          depth_(default_depth),
-          is_valid_(true) // initial json value is an empty object
-
+    virtual ~basic_json_deserializer()
     {
+        for (size_t i = 0; i < stack_.size(); ++i)
+        {
+            stack_[i].destroy();
+        }
     }
 
-    bool is_valid() const
-    {
-        return is_valid_;
-    }
-
-    basic_json<Char,Alloc> get_result()
-    {
-        is_valid_ = false;
-        return std::move(result_);
-    }
-
-//  Deprecated
     basic_json<Char,Alloc>& root()
     {
-        return result_;
+        return root_;
     }
 
 private:
-    basic_json<Char,Alloc> result_;
-
-    void push_object()
-    {
-        ++top_;
-        if (top_ >= depth_)
-        {
-            depth_ *= 2;
-            stack_.resize(depth_);
-        }
-        stack_[top_].value = basic_json<Char,Alloc>();
-    }
-
-    void push_array()
-    {
-        ++top_;
-        if (top_ >= depth_)
-        {
-            depth_ *= 2;
-            stack_.resize(depth_);
-        }
-        stack_[top_].value = basic_json<Char,Alloc>::make_array();
-    }
-
-    void pop_object()
-    {
-        JSONCONS_ASSERT(top_ >= 0);
-        --top_;
-    }
-
-    void pop_array()
-    {
-        JSONCONS_ASSERT(top_ >= 0);
-        --top_;
-    }
 
     void do_begin_json() override
     {
-        is_valid_ = false;
     }
 
     void do_end_json() override
     {
-        is_valid_ = true;
     }
 
     void do_begin_object(const basic_parsing_context<Char>& context) override
     {
-        push_object();
+        stack_.push_back(stack_item(true,context.minimum_structure_capacity()));
     }
 
     void do_end_object(const basic_parsing_context<Char>&) override
     {
-        stack_[top_].value.members().sort_members();
-        if (top_ > 0)
+        stack_.back().object_->sort_members();
+        basic_json<Char,Alloc> val(stack_.back().release_object());	    
+        stack_.pop_back();
+        if (stack_.size() > 0)
         {
-            if (stack_[top_-1].value.is_object())
+            if (stack_.back().is_object())
             {
-                stack_[top_-1].value.members().push_back(std::move(stack_[top_-1].name),std::move(stack_[top_].value));
+                stack_.back().object_->push_back(std::move(stack_.back().name_),std::move(val));
             }
-            else if (stack_[top_-1].value.is_array()) 
+            else
             {
-                stack_[top_-1].value.elements().push_back(std::move(stack_[top_].value));
+                stack_.back().array_->push_back(std::move(val));
             }
         }
         else
         {
-            result_.swap(stack_[0].value);
+            root_.swap(val);
         }
-        pop_object();
     }
 
     void do_begin_array(const basic_parsing_context<Char>& context) override
     {
-        push_array();
+        stack_.push_back(stack_item(false,context.minimum_structure_capacity()));
     }
 
     void do_end_array(const basic_parsing_context<Char>&) override
     {
-        if (top_ > 0)
+        basic_json<Char,Alloc> val(stack_.back().release_array());	    
+        stack_.pop_back();
+        if (stack_.size() > 0)
         {
-            if (stack_[top_-1].value.is_object())
+            if (stack_.back().is_object())
             {
-                stack_[top_-1].value.members().push_back(std::move(stack_[top_-1].name),std::move(stack_[top_].value));
+                stack_.back().object_->push_back(std::move(stack_.back().name_),std::move(val));
             }
-            else if (stack_[top_-1].value.is_array()) 
+            else
             {
-                stack_[top_-1].value.elements().push_back(std::move(stack_[top_].value));
+                stack_.back().array_->push_back(std::move(val));
             }
         }
         else
         {
-            result_.swap(stack_[0].value);
+            root_ = std::move(val);
         }
-        pop_array();
     }
 
     void do_name(const Char* p, size_t length, const basic_parsing_context<Char>&) override
     {
-        stack_[top_].name = std::basic_string<Char>(p,length);
+        stack_.back().name_ = std::basic_string<Char>(p,length);
     }
 
     void do_string_value(const Char* p, size_t length, const basic_parsing_context<Char>&) override
     {
-        if (top_ == -1)
+        if (stack_.back().is_object())
         {
-            result_.assign_string(p,length);
-        }
-        else if (stack_[top_].value.is_object())
-        {
-            stack_[top_].value.members().push_back(std::move(stack_[top_].name),basic_json<Char,Alloc>(p,length));
+            stack_.back().object_->push_back(std::move(stack_.back().name_),basic_json<Char,Alloc>(p,length));
         } 
-        else if (stack_[top_].value.is_array()) 
+        else 
         {
-            stack_[top_].value.elements().push_back(basic_json<Char,Alloc>(p,length));
+            stack_.back().array_->push_back(basic_json<Char,Alloc>(p,length));
         }
     }
 
-    void do_integer_value(int64_t value, const basic_parsing_context<Char>&) override
+    void do_longlong_value(long long value, const basic_parsing_context<Char>&) override
     {
-        if (top_ == -1)
+        if (stack_.back().is_object())
         {
-            result_.assign_longlong(value);
-        }
-        else if (stack_[top_].value.is_object())
-        {
-            stack_[top_].value.members().push_back(std::move(stack_[top_].name),basic_json<Char,Alloc>(value));
+            stack_.back().object_->push_back(std::move(stack_.back().name_),basic_json<Char,Alloc>::make_integer(value));
         } 
-        else if (stack_[top_].value.is_array()) 
+        else
         {
-            stack_[top_].value.elements().push_back(value);
+            stack_.back().array_->push_back(basic_json<Char,Alloc>::make_integer(value));
         }
     }
 
-    void do_uinteger_value(uint64_t value, const basic_parsing_context<Char>&) override
+    void do_ulonglong_value(unsigned long long value, const basic_parsing_context<Char>&) override
     {
-        if (top_ == -1)
+        if (stack_.back().is_object())
         {
-            result_.assign_ulonglong(value);
-        }
-        else if (stack_[top_].value.is_object())
-        {
-            stack_[top_].value.members().push_back(std::move(stack_[top_].name),basic_json<Char,Alloc>(value));
+            stack_.back().object_->push_back(std::move(stack_.back().name_),basic_json<Char,Alloc>::make_unsigned(value));
         } 
-        else if (stack_[top_].value.is_array()) 
+        else
         {
-            stack_[top_].value.elements().push_back(value);
+            stack_.back().array_->push_back(basic_json<Char,Alloc>::make_unsigned(value));
         }
     }
 
     void do_double_value(double value, const basic_parsing_context<Char>&) override
     {
-        if (top_ == -1)
+        if (stack_.back().is_object())
         {
-            result_.assign_double(value);
-        }
-        else if (stack_[top_].value.is_object())
-        {
-            stack_[top_].value.members().push_back(std::move(stack_[top_].name),basic_json<Char,Alloc>(value));
+            stack_.back().object_->push_back(std::move(stack_.back().name_),basic_json<Char,Alloc>::make_float(value));
         } 
-        else if (stack_[top_].value.is_array()) 
+        else
         {
-            stack_[top_].value.elements().push_back(value);
+            stack_.back().array_->push_back(basic_json<Char,Alloc>::make_float(value));
         }
     }
 
     void do_bool_value(bool value, const basic_parsing_context<Char>&) override
     {
-        if (top_ == -1)
+        if (stack_.back().is_object())
         {
-            result_.assign_bool(value);
-        }
-        else if (stack_[top_].value.is_object())
-        {
-            stack_[top_].value.members().push_back(std::move(stack_[top_].name),basic_json<Char,Alloc>(value));
+            stack_.back().object_->push_back(std::move(stack_.back().name_),basic_json<Char,Alloc>(value));
         } 
-        else if (stack_[top_].value.is_array()) 
+        else
         {
-            stack_[top_].value.elements().push_back(value);
+            stack_.back().array_->push_back(basic_json<Char,Alloc>(value));
         }
     }
 
     void do_null_value(const basic_parsing_context<Char>&) override
     {
-        if (top_ == -1)
+        if (stack_.back().is_object())
         {
-            result_.assign_null();
-        }
-        else if (stack_[top_].value.is_object())
-        {
-            stack_[top_].value.members().push_back(std::move(stack_[top_].name),std::move(basic_json<Char,Alloc>(null_type())));
+            stack_.back().object_->push_back(std::move(stack_.back().name_),basic_json<Char,Alloc>(basic_json<Char,Alloc>::null));
         } 
-        else if (stack_[top_].value.is_array()) 
+        else
         {
-            stack_[top_].value.elements().push_back(basic_json<Char,Alloc>::null);
+            stack_.back().array_->push_back(basic_json<Char,Alloc>::null);
         }
     }
 
-    int top_;
+	basic_json<Char,Alloc> root_;
     std::vector<stack_item> stack_;
-    int depth_;
-    bool is_valid_;
 };
 
 typedef basic_json_deserializer<char,std::allocator<void>> json_deserializer;

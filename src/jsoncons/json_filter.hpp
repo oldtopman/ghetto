@@ -12,7 +12,6 @@
 
 #include "jsoncons/json_input_handler.hpp"
 #include "jsoncons/json_output_handler.hpp"
-#include "jsoncons/parse_error_handler.hpp"
 
 namespace jsoncons {
 
@@ -74,12 +73,12 @@ private:
         writer_->value(value, length);
     }
 
-    void do_integer_value(int64_t value, const basic_parsing_context<Char>& context) override
+    void do_longlong_value(long long value, const basic_parsing_context<Char>& context) override
     {
         writer_->value(value);
     }
 
-    void do_uinteger_value(uint64_t value, 
+    void do_ulonglong_value(unsigned long long value, 
                                  const basic_parsing_context<Char>& context) override
     {
         writer_->value(value);
@@ -109,7 +108,7 @@ class basic_json_filter : public basic_json_input_handler<Char>
 public:
     basic_json_filter(basic_json_input_handler<Char>& handler)
         : handler_(std::addressof(handler)),
-          err_handler_(std::addressof(basic_default_parse_error_handler<Char>::instance()))
+          err_handler_(std::addressof(default_basic_parse_error_handler<Char>::instance()))
     {
     }
 
@@ -122,7 +121,7 @@ public:
 
     basic_json_filter(basic_json_output_handler<Char>& output_handler)
         : input_output_adapter_(output_handler), handler_(std::addressof(input_output_adapter_)),
-          err_handler_(std::addressof(basic_default_parse_error_handler<Char>::instance()))
+          err_handler_(std::addressof(default_basic_parse_error_handler<Char>::instance()))
     {
     }
 
@@ -190,12 +189,12 @@ private:
         handler_->value(value,context);
     }
 
-    void do_integer_value(int64_t value, const basic_parsing_context<Char>& context) override
+    void do_longlong_value(long long value, const basic_parsing_context<Char>& context) override
     {
         handler_->value(value,context);
     }
 
-    void do_uinteger_value(uint64_t value, const basic_parsing_context<Char>& context) override
+    void do_ulonglong_value(unsigned long long value, const basic_parsing_context<Char>& context) override
     {
         handler_->value(value,context);
     }
