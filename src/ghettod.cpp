@@ -186,7 +186,7 @@ int main(int argc, char* argv[]){
       jsoncons::json stale_netinfo;
       jsoncons::json tmp_netinfo;
       ComputerIndex computer_index;
-      ComputerIndex stale_computers;
+      ComputerIndex stale_computer_index;
       
       //Build netinfo outline.
       ni_outline outline;
@@ -217,10 +217,6 @@ int main(int argc, char* argv[]){
       computer_index.append(wrkcomp);
       
       //Write out json file for ghetto/other ghettods
-      computer_index.gen_from_vector();
-      tmp_file << jsoncons::pretty_print(computer_index.json());
-      tmp_file.flush();
-      std::cout << "file generated" << std::endl;
       
       //---Import local computers with 0 penalty
       
@@ -228,8 +224,7 @@ int main(int argc, char* argv[]){
       if(openJsonFile(netInfoPath.c_str(), stale_netinfo)){
         //TODO: Handle different openJsonFile errors.
       }
-      stale_computers.parse(stale_netinfo);
-      
+      stale_computer_index.parse(stale_netinfo);
       //Construct list of people to contact
       
       //---Attempt to contact other computers in the network, 1 penalty.
@@ -241,6 +236,10 @@ int main(int argc, char* argv[]){
       //finalize netinfo json
       
       //Write netinfo
+      computer_index.gen_from_vector();
+      netinfo["complist"] = computer_index.json();
+      tmp_file << jsoncons::pretty_print(netinfo);
+      tmp_file.flush();
       
       //Does MHD need to know about the update?
       
