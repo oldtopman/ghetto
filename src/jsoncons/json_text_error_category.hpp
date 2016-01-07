@@ -15,31 +15,34 @@ namespace jsoncons {
 
 namespace json_parser_errc 
 {
-    const int unexpected_eof = 0;
-    const int invalid_json_text = 1;
-    const int extra_character = 2;
-    const int max_depth_exceeded = 3;
-    const int single_quote = 4;
-    const int illegal_character_in_string = 5;
-    const int extra_comma = 6;
-    const int expected_name = 7;
-    const int expected_value = 8;
-    const int invalid_value = 9;
-    const int expected_colon = 10;
-    const int illegal_control_character = 11;
-    const int illegal_escaped_character = 12;
-    const int expected_codepoint_surrogate_pair = 13;
-    const int invalid_hex_escape_sequence = 14;
-    const int invalid_unicode_escape_sequence = 15;
-    const int leading_zero = 16;
-    const int invalid_number = 17;
-    const int expected_comma_or_right_brace = 18;
-    const int expected_comma_or_right_bracket = 19;
-    const int unexpected_right_bracket = 20;
-    const int unexpected_right_brace = 21;
+    enum json_parser_errc_t 
+    {
+        unexpected_eof,
+        invalid_json_text,
+        extra_character,
+        max_depth_exceeded,
+        mismatched_parentheses_or_brackets,
+        single_quote,
+        illegal_character_in_string,
+        expected_comma_or_end,
+        extra_comma,
+        unexpected_end_of_object,
+        unexpected_end_of_array,
+        expected_name,
+        expected_value,
+        invalid_value,
+        expected_colon,
+        illegal_control_character,
+        illegal_escaped_character,
+        expected_codepoint_surrogate_pair,
+        invalid_hex_escape_sequence,
+        invalid_unicode_escape_sequence,
+        leading_zero,
+        invalid_number
+    };
 }
 
-class json_error_category_impl
+class json_text_error_category_impl
    : public std::error_category
 {
 public:
@@ -54,17 +57,25 @@ public:
         case json_parser_errc::unexpected_eof:
             return "Unexpected end of file";
         case json_parser_errc::invalid_json_text:
-            return "Invalid JSON text";
+            return "A jSON text must be an object or array";
         case json_parser_errc::extra_character:
             return "Unexpected non-whitespace character after JSON text";
         case json_parser_errc::max_depth_exceeded:
             return "Maximum JSON depth exceeded";
+        case json_parser_errc::mismatched_parentheses_or_brackets:
+            return "Mismatched parentheses or brackets";
         case json_parser_errc::single_quote:
             return "JSON strings cannot be quoted with single quotes";
         case json_parser_errc::illegal_character_in_string:
             return "Illegal character in string";
         case json_parser_errc::extra_comma:
             return "Extra comma";
+        case json_parser_errc::expected_comma_or_end:
+            return "Expected comma or end";
+        case json_parser_errc::unexpected_end_of_object:
+            return "Unexpected end of object '}'";
+        case json_parser_errc::unexpected_end_of_array:
+            return "Unexpected end of array ']'";
         case json_parser_errc::expected_name:
             return "Expected object member name";
         case json_parser_errc::expected_value:
@@ -83,18 +94,10 @@ public:
             return "Invalid codepoint, expected hexadecimal digit.";
         case json_parser_errc::invalid_unicode_escape_sequence:
             return "Invalid codepoint, expected four hexadecimal digits.";
-        case json_parser_errc::leading_zero:
-            return "A number cannot have a leading zero";
         case json_parser_errc::invalid_number:
             return "Invalid number";
-        case json_parser_errc::expected_comma_or_right_brace:
-            return "Expected comma or right brace ']'";
-        case json_parser_errc::expected_comma_or_right_bracket:
-            return "Expected comma or right bracket ']'";
-        case json_parser_errc::unexpected_right_brace:
-            return "Unexpected right brace '}'";
-        case json_parser_errc::unexpected_right_bracket:
-            return "Unexpected right bracket ']'";
+        case json_parser_errc::leading_zero:
+            return "A number cannot have a leading zero";
         default:
             return "Unknown JSON parser error";
         }
@@ -102,9 +105,9 @@ public:
 };
 
 inline
-const std::error_category& json_error_category()
+const std::error_category& json_text_error_category()
 {
-  static json_error_category_impl instance;
+  static json_text_error_category_impl instance;
   return instance;
 }
 

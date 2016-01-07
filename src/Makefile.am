@@ -9,9 +9,12 @@ JSONCONS_HPP = src/jsoncons/json.hpp \
 	src/jsoncons/json_filter.hpp \
 	src/jsoncons/json_input_handler.hpp \
 	src/jsoncons/json_output_handler.hpp \
+	src/jsoncons/json_parser.hpp \
+	src/jsoncons/json_parser_category.hpp \
 	src/jsoncons/json_reader.hpp \
 	src/jsoncons/json_serializer.hpp \
 	src/jsoncons/json_structures.hpp \
+	src/jsoncons/json_text_error_category.hpp \
 	src/jsoncons/json_type_traits.hpp \
 	src/jsoncons/jsoncons.hpp \
 	src/jsoncons/jsoncons_config.hpp \

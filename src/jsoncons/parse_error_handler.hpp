@@ -17,8 +17,8 @@ class json_parse_exception : public json_exception
 {
 public:
     json_parse_exception(std::error_code ec,
-                         size_t line,
-                         size_t column)
+                         unsigned long line,
+                         unsigned long column)
         : error_code_(ec),
           line_number_(line),
           column_number_(column)
@@ -43,20 +43,20 @@ public:
         return error_code_;
     }
 
-    size_t line_number() const
+    unsigned long line_number() const
     {
         return line_number_;
     }
 
-    size_t column_number() const
+    unsigned long column_number() const
     {
         return column_number_;
     }
 private:
     std::error_code error_code_;
     std::string buffer_;
-    size_t line_number_;
-    size_t column_number_;
+    unsigned long line_number_;
+    unsigned long column_number_;
 };
 
 template<typename Char>
@@ -65,29 +65,23 @@ class basic_parsing_context
 public:
     virtual ~basic_parsing_context() {}
 
-    size_t line_number() const
+    unsigned long line_number() const
     {
         return do_line_number();
     }
-    size_t column_number() const 
+    unsigned long column_number() const 
     {
         return do_column_number();
     }
-    Char current_char() const
-    {
-        return do_current_char();
-    }
-
-    // Deprecated
     Char last_char() const
     {
-        return do_current_char();
+        return do_last_char();
     }
 
 private:
-    virtual size_t do_line_number() const = 0;
-    virtual size_t do_column_number() const = 0;
-    virtual Char do_current_char() const = 0;
+    virtual unsigned long do_line_number() const = 0;
+    virtual unsigned long do_column_number() const = 0;
+    virtual Char do_last_char() const = 0;
 };
 
 typedef basic_parsing_context<char> parsing_context;
@@ -113,33 +107,21 @@ public:
         do_error(ec,context);
     }
 
-    void fatal_error(std::error_code ec,
-                     const basic_parsing_context<Char>& context) throw (json_parse_exception) 
-    {
-        do_fatal_error(ec,context);
-        throw json_parse_exception(ec,context.line_number(),context.column_number());
-    }
-
 private:
     virtual void do_warning(std::error_code,
                             const basic_parsing_context<Char>& context) throw (json_parse_exception) = 0;
 
     virtual void do_error(std::error_code,
                           const basic_parsing_context<Char>& context) throw (json_parse_exception) = 0;
-
-    virtual void do_fatal_error(std::error_code,
-                                const basic_parsing_context<Char>& context) throw (json_parse_exception)
-    {
-    }
 };
 
 template <typename Char>
-class basic_default_parse_error_handler : public basic_parse_error_handler<Char>
+class default_basic_parse_error_handler : public basic_parse_error_handler<Char>
 {
 public:
     static basic_parse_error_handler<Char>& instance()
     {
-        static basic_default_parse_error_handler<Char> instance;
+        static default_basic_parse_error_handler<Char> instance;
         return instance;
     }
 private:
@@ -158,8 +140,8 @@ private:
 typedef basic_parse_error_handler<char> parse_error_handler;
 typedef basic_parse_error_handler<wchar_t> wparse_error_handler;
 
-typedef basic_default_parse_error_handler<char> default_parse_error_handler;
-typedef basic_default_parse_error_handler<wchar_t> wdefault_parse_error_handler;
+typedef default_basic_parse_error_handler<char> default_parse_error_handler;
+typedef default_basic_parse_error_handler<wchar_t> wdefault_parse_error_handler;
 
 typedef basic_parsing_context<char> parsing_context;
 typedef basic_parsing_context<wchar_t> wparsing_context;

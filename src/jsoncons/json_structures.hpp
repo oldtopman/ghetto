@@ -53,8 +53,8 @@ public:
     typedef typename std::vector<basic_json<Char,Alloc>>::const_iterator const_iterator;
 
     // Allocation
-    //static void* operator new(std::size_t) { return typename Alloc::template rebind<json_array>::other().allocate(1); }
-    //static void operator delete(void* ptr) { return typename Alloc::template rebind<json_array>::other().deallocate(static_cast<json_array*>(ptr), 1); }
+    static void* operator new(std::size_t) { return typename Alloc::template rebind<json_array>::other().allocate(1); }
+    static void operator delete(void* ptr) { return typename Alloc::template rebind<json_array>::other().deallocate(static_cast<json_array*>(ptr), 1); }
 
     json_array()
     {
@@ -66,8 +66,8 @@ public:
     }
 
     json_array(json_array&& val)
-        : elements_(val.elements_)
     {
+        elements_.swap(val.elements_);
     }
 
     json_array(size_t n)
@@ -80,20 +80,15 @@ public:
     {
     }
 
-    /*json_array(std::vector<basic_json<Char,Alloc>> elements)
+    json_array(std::vector<basic_json<Char,Alloc>> elements)
         : elements_(elements)
     {
-    }*/
+    }
 
     template <class InputIterator>
     json_array(InputIterator begin, InputIterator end)
         : elements_(begin,end)
     {
-    }
-
-    void swap(json_array<Char,Alloc>& val)
-    {
-        elements_.swap(val.elements_);
     }
 
     size_t size() const {return elements_.size();}
@@ -126,7 +121,7 @@ public:
 
     void add(size_t index, const basic_json<Char,Alloc>& value)
     {
-        auto position = index < elements_.size() ? elements_.begin() + index : elements_.end();
+        json_array<Char,Alloc>::iterator position = index < elements_.size() ? elements_.begin() + index : elements_.end();
         elements_.insert(position, value);
     }
 
@@ -137,8 +132,8 @@ public:
 
     void add(size_t index, basic_json<Char,Alloc>&& value)
     {
-        auto it = index < elements_.size() ? elements_.begin() + index : elements_.end();
-        elements_.insert(it, value);
+        json_array<Char,Alloc>::iterator position = index < elements_.size() ? elements_.begin() + index : elements_.end();
+        elements_.insert(position, value);
     }
 
     iterator begin() {return elements_.begin();}
@@ -170,9 +165,9 @@ private:
 };
 
 template <typename Char, typename Alloc, bool IsConst = false>
-class member_iterator
+class object_iterator
 {
-    typedef typename basic_json<Char,Alloc>::member_type value_type;
+    typedef typename basic_json<Char,Alloc>::member_type value_types;
     typedef std::ptrdiff_t difference_type;
     typedef typename std::conditional<IsConst, const typename basic_json<Char,Alloc>::member_type*, typename basic_json<Char,Alloc>::member_type*>::type pointer;
     typedef typename std::conditional<IsConst, const typename basic_json<Char,Alloc>::member_type&, typename basic_json<Char,Alloc>::member_type&>::type reference;
@@ -184,7 +179,7 @@ class member_iterator
     class deref_proxy
     {
     public:
-      deref_proxy(member_iterator const * it)
+      deref_proxy(object_iterator const * it)
         : it_(it)
       {}
 
@@ -199,12 +194,12 @@ class member_iterator
             return (it_->it_)->second;
         }
 
-        operator value_type() const
+        operator value_types() const
         {
-            return value_type(name(),value());
+            return value_types(name(),value());
         }
 
-        void operator =(value_type const& value)
+        void operator =(value_types const& value)
         {
           it_->invoke_(value);
         }
@@ -214,51 +209,51 @@ class member_iterator
             return this;
         }
     private:
-      member_iterator const * const it_;
+      object_iterator const * const it_;
 
     // Not to be implemented
     private:
       void operator =(deref_proxy const &);
     };
 public:
-    member_iterator(iterator_impl it)
+    object_iterator(iterator_impl it)
         : it_(it)
     {
     }
 
-    member_iterator(const member_iterator<Char,Alloc,false>& it)
+    object_iterator(const object_iterator<Char,Alloc,false>& it)
         : it_(it.it_)
     {
     }
 
-    member_iterator& operator=(member_iterator rhs)
+    object_iterator& operator=(object_iterator rhs)
     {
         swap(*this,rhs);
         return *this;
     }
 
-    member_iterator& operator++()
+    object_iterator& operator++()
     {
         ++it_;
         return *this;
     }
 
-    member_iterator operator++(int) // postfix increment
+    object_iterator operator++(int) // postfix increment
     {
-        member_iterator temp(*this);
+        object_iterator temp(*this);
         ++it_;
         return temp;
     }
 
-    member_iterator& operator--()
+    object_iterator& operator--()
     {
         --it_;
         return *this;
     }
 
-    member_iterator operator--(int)
+    object_iterator operator--(int)
     {
-        member_iterator temp(*this);
+        object_iterator temp(*this);
         --it_;
         return temp;
     }
@@ -273,15 +268,15 @@ public:
         return deref_proxy(this);
     }
 
-    friend bool operator==(const member_iterator& it1, const member_iterator& it2)
+    friend bool operator==(const object_iterator& it1, const object_iterator& it2)
     {
         return it1.it_ == it2.it_;
     }
-    friend bool operator!=(const member_iterator& it1, const member_iterator& it2)
+    friend bool operator!=(const object_iterator& it1, const object_iterator& it2)
     {
         return it1.it_ != it2.it_;
     }
-    friend void swap(member_iterator& lhs, member_iterator& rhs)
+    friend void swap(object_iterator& lhs, object_iterator& rhs)
     {
         using std::swap;
         swap(lhs.it_,rhs.it_);
@@ -291,7 +286,7 @@ public:
     iterator_impl it_;
     typename basic_json<Char,Alloc>::member_type member_;
 
-    void invoke_(value_type const & value)
+    void invoke_(value_types const & value)
     {
         *it_ = value;
     }
@@ -301,8 +296,8 @@ template <typename Char,class Alloc>
 class json_object
 {
 public:
-    typedef member_iterator<Char,Alloc,false> iterator;
-    typedef member_iterator<Char,Alloc,true> const_iterator;
+    typedef object_iterator<Char,Alloc,false> iterator;
+    typedef object_iterator<Char,Alloc,true> const_iterator;
 	typedef std::pair<std::basic_string<Char>,basic_json<Char,Alloc>> member_type;
     typedef typename std::vector<member_type>::iterator internal_iterator;
     typedef typename std::vector<member_type>::const_iterator const_internal_iterator;
@@ -321,11 +316,6 @@ public:
     }
 
     json_object(json_object&& val)
-        : members_(val.members_)
-    {
-    }
-
-    void swap(json_object& val)
     {
         members_.swap(val.members_);
     }
