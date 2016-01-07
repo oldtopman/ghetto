@@ -316,7 +316,8 @@ int main(int argc, char* argv[]){
     
     //Display appropiate computer's details.
     computerDetails.clean();
-    computerDetails.make(gen_comp_details(computers, selectedComputerIndex));
+    std::string computerDetailString = gen_comp_details(computers, selectedComputerIndex);
+    computerDetails.make(computerDetailString.c_str());
   }
   
   

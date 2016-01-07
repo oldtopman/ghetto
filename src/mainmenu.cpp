@@ -39,7 +39,7 @@ std::string gen_comp_menu(ComputerIndex * p_computers)
   return wrkstring;
 }
 
-const char * gen_comp_details(ComputerIndex * p_computers, int p_index)
+std::string gen_comp_details(ComputerIndex * p_computers, int p_index)
 {
   std::string wrkstring("");
   
@@ -57,5 +57,5 @@ const char * gen_comp_details(ComputerIndex * p_computers, int p_index)
   wrkstring += "-";
   wrkstring += std::to_string(p_computers->jcount(p_index));
   
-  return wrkstring.c_str();
+  return wrkstring;
 }

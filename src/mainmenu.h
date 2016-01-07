@@ -23,6 +23,6 @@
 #define MAINMENU_H_INCLUDED
 
 std::string gen_comp_menu(ComputerIndex * p_computers);
-const char * gen_comp_details(ComputerIndex * p_computers, int p_index);
+std::string gen_comp_details(ComputerIndex * p_computers, int p_index);
 
 #endif
