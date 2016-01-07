@@ -89,6 +89,10 @@ int ComputerIndex::count(){
   return houses;
 }
 
+jsoncons::json ComputerIndex::json(){
+  return complist;
+}
+
 int ComputerIndex::parse(jsoncons::json p_computerList)
 {
   
@@ -128,6 +132,7 @@ int ComputerIndex::parse(jsoncons::json p_computerList)
 
 void ComputerIndex::gen_from_vector(){
   complist.clear();
+  complist = jsoncons::json::array();
   jsoncons::json computerJson;
   
   //We could address the vector directly, but this makes

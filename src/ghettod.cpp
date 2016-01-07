@@ -109,21 +109,20 @@ int main(int argc, char* argv[]){
   /**********************
   * File initialization *
   **********************/
-  
-  //TODO: Remove this
-  static const char * bodyfilename = "body.out";
   FILE * bodyfile;
-  
-  bodyfile = fopen(bodyfilename, "wb");
-  if(!bodyfile) {
+  bodyfile = fopen("body.out", "wb");
+  if(!bodyfile){
     return -1;
   }
   
-  //static const char * pagefilename = "pagefile";
-  static const char * pagefilename = "/home/ian/.ghetto/netinfo.json";
-  std::ifstream pagefile;
+  std::ofstream tmp_file;
+  tmp_file.open(workingNetInfoPath, std::ios::out);
+  if(!tmp_file){
+    return -1;
+  }
   
-  pagefile.open(pagefilename);
+  std::ifstream pagefile;
+  pagefile.open(netInfoPath);
   if(!pagefile) {
     return -1;
   }
@@ -157,11 +156,6 @@ int main(int argc, char* argv[]){
   ******************* BEGIN PROGRAM *******************
   *****************************************************
   ****************************************************/
-  
-  /*
-   * Example code for getting stuff with curl
-   * Needs to be adjusted and repurposed, here for reference.
-   *
   //Initialize our handle
   CURL *curlHandle;
   curlHandle = curl_easy_init();
@@ -178,13 +172,9 @@ int main(int argc, char* argv[]){
     //Handle errors.
     std::cout << curlError << std::endl;
   }
-  */
   
   //Check input for quit hooks.
   while(true){
-    
-    //TODO: Read sleep interval from file
-    sleep(300);
     
     if(true){
       
@@ -194,7 +184,8 @@ int main(int argc, char* argv[]){
       //TODO: All of this needs to be on the stack
       jsoncons::json netinfo;
       jsoncons::json stale_netinfo;
-      ComputerIndex computers;
+      jsoncons::json tmp_netinfo;
+      ComputerIndex computer_index;
       ComputerIndex stale_computers;
       
       //Build netinfo outline.
@@ -223,7 +214,13 @@ int main(int argc, char* argv[]){
       wrkcomp.uptime = my_sysinfo.uptime;
       wrkcomp.jumpCount = 0;
       wrkcomp.online = true;
-      computers.append(wrkcomp);
+      computer_index.append(wrkcomp);
+      
+      //Write out json file for ghetto/other ghettods
+      computer_index.gen_from_vector();
+      tmp_file << jsoncons::pretty_print(computer_index.json());
+      tmp_file.flush();
+      std::cout << "file generated" << std::endl;
       
       //---Import local computers with 0 penalty
       
@@ -251,6 +248,9 @@ int main(int argc, char* argv[]){
       
       
     }
+    
+    //TODO: Read sleep interval from file
+    sleep(300);
   }
   
   //Don't exit immidiately.
@@ -260,7 +260,6 @@ int main(int argc, char* argv[]){
   * Cleanup *
   **********/
   MHD_stop_daemon (daemon);
-  fclose(bodyfile);
   curl_easy_cleanup(curlHandle);
   return 0;
 }

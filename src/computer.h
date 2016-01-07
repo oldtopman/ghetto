@@ -43,6 +43,7 @@ class ComputerIndex{
   //generic accessors
   void append(computer p_comp);
   int count();
+  jsoncons::json json();
   
   //actual functions
   int parse(jsoncons::json p_computerList);
