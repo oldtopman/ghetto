@@ -30,6 +30,6 @@ struct contact{
 };
 
 void callNeighbors(ComputerIndex &p_ci);
-void callNeighbors(ComputerIndex &p_ci, std::vector<contact> &p_contacts);
+static void callNeighbors(ComputerIndex &p_ci, std::vector<contact> &p_contacts);
 
 #endif

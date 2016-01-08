@@ -51,17 +51,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //Defines
 #define GHETTO_PORT 6770 //G(HE)TTO
 
-//TODO: Learn what this does
-//TODO: Make write_data write_data_t
-static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
-{
-  int written = fwrite(ptr, size, nmemb, (FILE *)stream);
-  return written;
-}
-
 //TODO: Un-globalize this
 static std::string pageText;
 
+//TODO: Move this somewhere else
 static int answer_to_connection (void *cls, struct MHD_Connection *connection, const char *url, const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **con_cls){
   
   //Make all the response bits
@@ -150,29 +143,11 @@ int main(int argc, char* argv[]){
   
   curl_global_init(CURL_GLOBAL_NOTHING); //Assume libcurl was compiled with minimal features
   
-  char curlError[CURL_ERROR_SIZE]; //Handle curl errors.
-  
   /****************************************************
   *****************************************************
   ******************* BEGIN PROGRAM *******************
   *****************************************************
   ****************************************************/
-  //Initialize our handle
-  CURL *curlHandle;
-  curlHandle = curl_easy_init();
-  
-  //Configure handle
-  curl_easy_setopt(curlHandle, CURLOPT_URL, "http://localhost:6770");
-  curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, write_data);
-  curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, bodyfile);
-  curl_easy_setopt(curlHandle, CURLOPT_ERRORBUFFER, curlError);
-  
-  //Execute handle
-  if(curl_easy_perform(curlHandle) != CURLE_OK){
-    
-    //Handle errors.
-    std::cout << curlError << std::endl;
-  }
   
   //Check input for quit hooks.
   while(true){
@@ -227,28 +202,6 @@ int main(int argc, char* argv[]){
       //Construct list of people to contact
       //Yay for recursive functions
       callNeighbors(computer_index);
-      bool scanComputers = true;
-      while(scanComputers){
-        //Try to get the json file from the other computers in the list
-        curl_easy_setopt(curlHandle, CURLOPT_URL, "http://192.168.254.101:6770");
-        curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, write_data);
-        curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, bodyfile);
-        curl_easy_setopt(curlHandle, CURLOPT_ERRORBUFFER, curlError);
-        if(curl_easy_perform(curlHandle) != CURLE_OK){
-          //Handle errors.
-          //TODO: Optionally log these errors.
-          //TODO: Show these in ghetto? 
-          //DEBUG: just for detecting errors.
-          std::cout << curlError << std::endl;
-        }
-        
-        //Read the file into swap_ci
-        
-        //Import it into computer_index
-        
-        //Set scanComputers to false when the last computer in the list has been scanned.
-        
-      }
       
       //Write netinfo
       computer_index.gen_from_vector();
@@ -274,6 +227,5 @@ int main(int argc, char* argv[]){
   * Cleanup *
   **********/
   MHD_stop_daemon (daemon);
-  curl_easy_cleanup(curlHandle);
   return 0;
 }
