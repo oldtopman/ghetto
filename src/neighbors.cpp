@@ -32,28 +32,35 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
   return written;
 }
 
+//TODO: Implement this so that it's called recursively.
 void callNeighbors(ComputerIndex &p_ci){
+  
+  //Get CURL going.
   CURL *curlHandle;
   curlHandle = curl_easy_init();
   curl_easy_setopt(curlHandle, CURLOPT_URL, "http://localhost:6770");
   curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, write_data);
-  //curl_easy_setopt(curlHandle, CURLOPT_ERRORBUFFER, curlError);
-  //char curlError[CURL_ERROR_SIZE]; //Handle curl errors.
+  char curlError[CURL_ERROR_SIZE]; //Handle curl errors.
+  curl_easy_setopt(curlHandle, CURLOPT_ERRORBUFFER, curlError);
+  
+  //Create things the recursive functions need.
   std::vector<contact> contacts;
-  curl_easy_cleanup(curlHandle);
-  callNeighbors(p_ci, contacts);
+  int index = 0;
+  
+  //Start making the calls!
+  for(int i = 0; i < p_ci.count(); i++){
+    
+    //Skip our host.
+    if(p_ci.jcount(i) == 0){
+      //skip?
+    }else{
+      std::string address = p_ci.host(i);
+      address += ":6770";
+      curl_easy_setopt(curlHandle, CURLOPT_URL, address.c_str());
+    }
+  }
+  
+  //Cleanup
   curl_easy_cleanup(curlHandle);
   return;
-}
-
-static void callNeighbors(ComputerIndex &p_ci, std::vector<contact> &p_contacts){
-  
-  /*
-  FILE * outfile;
-  outfile = fopen("FILENAME HERE", "wb");
-  if(!bodyfile){
-    //error here for something
-  }
-  curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, outfile);
-  */
 }
