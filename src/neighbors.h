@@ -29,6 +29,6 @@ struct contact{
   std::string name;
 };
 
-void callNeighbors(ComputerIndex &p_ci);
+void callNeighbors(ComputerIndex &p_ci, std::string tmp_path);
 
 #endif

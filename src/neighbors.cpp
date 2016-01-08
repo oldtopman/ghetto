@@ -33,13 +33,21 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
 }
 
 //TODO: Implement this so that it's called recursively.
-void callNeighbors(ComputerIndex &p_ci){
+void callNeighbors(ComputerIndex &p_ci, std::string tmp_path){
+  
+  //Get the downloaded file handle ready
+  FILE * outfile;
+  outfile = fopen(tmp_path.c_str(), "wb");
+  if(!outfile){
+    //error
+  }
   
   //Get CURL going.
   CURL *curlHandle;
   curlHandle = curl_easy_init();
   curl_easy_setopt(curlHandle, CURLOPT_URL, "http://localhost:6770");
-  curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, write_data);
+  //curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, write_data);
+  curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, outfile);
   char curlError[CURL_ERROR_SIZE]; //Handle curl errors.
   curl_easy_setopt(curlHandle, CURLOPT_ERRORBUFFER, curlError);
   
@@ -57,6 +65,14 @@ void callNeighbors(ComputerIndex &p_ci){
       std::string address = p_ci.host(i);
       address += ":6770";
       curl_easy_setopt(curlHandle, CURLOPT_URL, address.c_str());
+      if(curl_easy_perform(curlHandle) != CURLE_OK){
+        //This will probably happen a lot.
+        //Most hosts will be unreachable, after all.
+        std::cout << curlError << std::endl;
+      }
+      else{
+        //Process the data, add it to p_ci.
+      }
     }
   }
   

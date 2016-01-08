@@ -99,6 +99,7 @@ int main(int argc, char* argv[]){
   std::string ghettoPath(homePath + "/.ghetto");
   std::string netInfoPath(ghettoPath + "/netinfo.json");
   std::string workingNetInfoPath(ghettoPath + "/workingnetinfo.json");
+  std::string tmpNetInfoPath(ghettoPath + "/tmp.json");
   
   /**********************
   * File initialization *
@@ -201,7 +202,7 @@ int main(int argc, char* argv[]){
       
       //Construct list of people to contact
       //Yay for recursive functions
-      callNeighbors(computer_index);
+      callNeighbors(computer_index, tmpNetInfoPath);
       
       //Write netinfo
       computer_index.gen_from_vector();
