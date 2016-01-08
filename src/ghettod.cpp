@@ -46,6 +46,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //ghettod includes
 #include "json.h"
 #include "computer.h"
+#include "neighbors.h"
 
 //Defines
 #define GHETTO_PORT 6770 //G(HE)TTO
@@ -186,7 +187,7 @@ int main(int argc, char* argv[]){
       jsoncons::json stale_netinfo;
       jsoncons::json tmp_netinfo;
       ComputerIndex computer_index;
-      ComputerIndex stale_computer_index;
+      ComputerIndex swap_ci;
       
       //Build netinfo outline.
       ni_outline outline;
@@ -220,13 +221,34 @@ int main(int argc, char* argv[]){
       if(openJsonFile(netInfoPath.c_str(), stale_netinfo)){
         //TODO: Handle different openJsonFile errors.
       }
-      stale_computer_index.parse(stale_netinfo);
-      computer_index.import_index(stale_computer_index);
+      swap_ci.parse(stale_netinfo);
+      computer_index.import_index(swap_ci);
+      
       //Construct list of people to contact
-      
-      //---Attempt to contact other computers in the network, 1 penalty.
-      
-      //---Copy over the leftover stale computers into the array.
+      //Yay for recursive functions
+      callNeighbors(computer_index);
+      bool scanComputers = true;
+      while(scanComputers){
+        //Try to get the json file from the other computers in the list
+        curl_easy_setopt(curlHandle, CURLOPT_URL, "http://192.168.254.101:6770");
+        curl_easy_setopt(curlHandle, CURLOPT_WRITEFUNCTION, write_data);
+        curl_easy_setopt(curlHandle, CURLOPT_WRITEDATA, bodyfile);
+        curl_easy_setopt(curlHandle, CURLOPT_ERRORBUFFER, curlError);
+        if(curl_easy_perform(curlHandle) != CURLE_OK){
+          //Handle errors.
+          //TODO: Optionally log these errors.
+          //TODO: Show these in ghetto? 
+          //DEBUG: just for detecting errors.
+          std::cout << curlError << std::endl;
+        }
+        
+        //Read the file into swap_ci
+        
+        //Import it into computer_index
+        
+        //Set scanComputers to false when the last computer in the list has been scanned.
+        
+      }
       
       //Write netinfo
       computer_index.gen_from_vector();

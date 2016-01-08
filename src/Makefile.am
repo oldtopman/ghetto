@@ -26,6 +26,6 @@ ghetto_HEADERS = mainmenu.h $(SHARED_HEADER_FILES)
 ghetto_LDADD = -lncurses
 
 ghettoddir = .
-ghettod_SOURCES = ghettod.cpp $(SHARED_CPP_FILES) $(JSONCONS_HPP)
-ghettod_HEADERS = $(SHARED_HEADER_DIELS)
+ghettod_SOURCES = ghettod.cpp neighbors.cpp $(SHARED_CPP_FILES) $(JSONCONS_HPP)
+ghettod_HEADERS = neighbors.h $(SHARED_HEADER_FILES)
 ghettod_LDADD = $(MHD_LIBS) $(CURL_LIBS)
