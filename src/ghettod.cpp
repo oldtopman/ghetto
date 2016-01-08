@@ -216,24 +216,17 @@ int main(int argc, char* argv[]){
       wrkcomp.online = true;
       computer_index.append(wrkcomp);
       
-      //Write out json file for ghetto/other ghettods
-      
-      //---Import local computers with 0 penalty
-      
-      //Import local netinfo
+      //Import local netinfo and add to list
       if(openJsonFile(netInfoPath.c_str(), stale_netinfo)){
         //TODO: Handle different openJsonFile errors.
       }
       stale_computer_index.parse(stale_netinfo);
+      computer_index.import_index(stale_computer_index);
       //Construct list of people to contact
       
       //---Attempt to contact other computers in the network, 1 penalty.
       
       //---Copy over the leftover stale computers into the array.
-      
-      //Append array to netinfo
-      
-      //finalize netinfo json
       
       //Write netinfo
       computer_index.gen_from_vector();

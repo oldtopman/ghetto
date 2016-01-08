@@ -18,6 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "jsoncons/json.hpp"
 #include "computer.h"
+
+void ComputerIndex::remove(int p_index){
+  //If there's a lot of slowdown here,
+  //consider a different structure (not vector)
+  if(p_index > houses){ return; }
+  computerVector.erase(computerVector.begin()+p_index);
+}
+  
 std::string ComputerIndex::name(int p_index)
 {
   if(p_index > houses)
@@ -93,6 +101,22 @@ jsoncons::json ComputerIndex::json(){
   return complist;
 }
 
+computer& ComputerIndex::operator[](const int p_index){
+  
+  //Make sure the read isn't out-of-bounds.
+  if(p_index < 0 || p_index > houses){
+    computer errComp;
+    errComp.name = "ERROR!";
+    errComp.host = "666.666.666.666";
+    errComp.message = "ComputerIndex subscript overrun";
+    errComp.online = false;
+    return errComp;
+  }
+  else{
+    return computerVector[p_index];
+  }
+}
+
 int ComputerIndex::parse(jsoncons::json p_computerList)
 {
   
@@ -105,7 +129,7 @@ int ComputerIndex::parse(jsoncons::json p_computerList)
   }
   
   //Count elements
-  houses = (complist.end_elements() - complist.begin_elements());
+  houses = complist.size();
   
   jsoncons::json activeComputerJson;
   jsoncons::json::array_iterator complistIterator = complist.begin_elements();
@@ -150,3 +174,40 @@ void ComputerIndex::gen_from_vector(){
   
 }
 
+void ComputerIndex::import_index(ComputerIndex &p_ci){
+  int found;
+  
+  //Supposed to avoid duplicates.
+  //Don't import duplicates, and keep the most recent one.
+  for(int i = 0; i < p_ci.count(); i++){
+    found = 0;
+    for(int j = 0; (j <= computerVector.size()) && (found == 0); j++){
+      if(p_ci.name(i) == ComputerIndex::name(j)){
+        found = j;
+      }
+    }
+    if(found != 0){
+      //Pick the most recent one and keep it.
+      if(p_ci.time(i) < ComputerIndex::time(found)){
+        ComputerIndex::remove(found);
+        computerVector.push_back(p_ci.computerVector[i]);
+      }
+      //If they're at the same time, pick the one with the least jumps.
+      else if(p_ci.time(i) == ComputerIndex::time(found)){
+        if(p_ci.jcount(i) < ComputerIndex::jcount(found)){
+          ComputerIndex::remove(found);
+          computerVector.push_back(p_ci.computerVector[i]);
+        }
+      }
+      //Otherwise do nothing, since we want to keep the version in the vector already.
+    }
+    else{
+      computerVector.push_back(p_ci.computerVector[i]);
+      houses++;
+    }
+  }
+  
+  //Update the number of houses in the 'hood
+  houses = computerVector.size();
+  
+}

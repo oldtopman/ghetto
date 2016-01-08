@@ -24,12 +24,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class ComputerIndex{
   
-  private:
-  std::vector<computer> computerVector;
+private:
   jsoncons::json complist;
   int houses; //TODO: Name this variable better
+  void remove(int p_index);
   
-  public:
+public:
+  //TODO: Move this back to private
+  std::vector<computer> computerVector;
   
   //accessors for the struct.
   std::string name(int p_index);
@@ -44,10 +46,12 @@ class ComputerIndex{
   void append(computer p_comp);
   int count();
   jsoncons::json json();
+  computer& operator[](const int p_index);
   
   //actual functions
   int parse(jsoncons::json p_computerList);
   void gen_from_vector();
+  void import_index(ComputerIndex &p_ci);
   
   ComputerIndex():
   houses(0)
